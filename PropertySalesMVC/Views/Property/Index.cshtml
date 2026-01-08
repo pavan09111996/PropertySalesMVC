@@ -1,23 +1,53 @@
 ﻿@model List<PropertySalesMVC.Models.Property>
 
-<h2>Available Properties</h2>
 
-@if (Model != null && Model.Count > 0)
-{
-    foreach (var item in Model)
+<div class="container mt-4">
+
+    <!-- Header Row -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Available Properties</h2>
+
+    </div>
+
+    @if (Model != null && Model.Count > 0)
     {
-        <div class="card mb-3">
-            <img src="@item.ImageUrl" class="card-img-top" />
-            <div class="card-body">
-                <h5>@item.Title</h5>
-                <p>@item.Location</p>
-                <p>₹ @item.Price</p>
-                <p>@item.Description</p>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Image</th>
+                        <th>Title</th>
+                        <th>Location</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="width:150px">
+                                <img src="@item.ImageUrl"
+                                     alt="Property Image"
+                                     class="img-fluid rounded"
+                                     style="max-height:100px;" />
+                            </td>
+                            <td>@item.Title</td>
+                            <td>@item.Location</td>
+                            <td class="fw-bold text-success">
+                                ₹ @item.Price
+                            </td>
+                            <td>@item.Description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     }
-}
-else
-{
-    <p>No properties found.</p>
-}
+    else
+    {
+        <div class="alert alert-warning">
+            No properties found.
+        </div>
+    }
+</div>

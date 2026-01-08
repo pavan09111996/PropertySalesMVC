@@ -20,3 +20,31 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* =========================
+   BODY BACKGROUND IMAGE
+   ========================= */
+
+.body-bg {
+    min-height: calc(100vh - 120px);
+    background-image: url('/images/property-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    position: relative;
+}
+
+    /* Dark overlay for readability */
+    .body-bg::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+    }
+
+    /* Keep page content above overlay */
+    .body-bg .container {
+        position: relative;
+        z-index: 1;
+    }
+
