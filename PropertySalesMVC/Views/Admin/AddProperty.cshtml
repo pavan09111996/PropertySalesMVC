@@ -1,0 +1,67 @@
+﻿@{
+    ViewData["Title"] = "Add Property";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2>Add New Property</h2>
+<hr />
+
+<form class="mt-4"
+      method="post"
+      enctype="multipart/form-data">
+
+    <!-- Property Title -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Property Title</label>
+        <input type="text"
+               name="Title"
+               class="form-control"
+               placeholder="Enter property title" />
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Location</label>
+        <input type="text"
+               name="Location"
+               class="form-control"
+               placeholder="Enter location" />
+    </div>
+
+    <!-- Price -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Price</label>
+        <input type="number"
+               name="Price"
+               class="form-control"
+               placeholder="Enter price" />
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Description</label>
+        <textarea name="Description"
+                  class="form-control"
+                  rows="4"
+                  placeholder="Enter property description"></textarea>
+    </div>
+
+    <!-- Property Images (Multiple Upload) -->
+    <div class="mb-3">
+        <label class="form-label fw-semibold">Property Images</label>
+        <input type="file"
+               name="Images"
+               class="form-control"
+               multiple
+               accept="image/*" />
+        <small class="text-muted">
+            You can select multiple images
+        </small>
+    </div>
+
+    <!-- Submit Button -->
+    <button type="submit" class="btn btn-primary">
+        Save Property
+    </button>
+
+</form>
