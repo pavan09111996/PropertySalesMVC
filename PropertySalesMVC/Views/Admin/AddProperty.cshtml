@@ -1,0 +1,49 @@
+﻿@{
+    ViewData["Title"] = "Add Property";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h2 class="mb-4">Add New Property</h2>
+
+<form method="post"
+      asp-controller="Admin"
+      asp-action="AddProperty"
+      enctype="multipart/form-data">
+
+    <!-- Title -->
+    <div class="mb-3">
+        <label class="form-label">Property Title</label>
+        <input type="text" class="form-control" name="Title" required />
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+        <label class="form-label">Location</label>
+        <input type="text" class="form-control" name="Location" required />
+    </div>
+
+    <!-- Price -->
+    <div class="mb-3">
+        <label class="form-label">Price</label>
+        <input type="number" class="form-control" name="Price" required />
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea class="form-control" name="Description" rows="4"></textarea>
+    </div>
+
+    <!-- Multiple Images -->
+    <div class="mb-3">
+        <label class="form-label">Property Images</label>
+        <input type="file"
+               class="form-control"
+               name="Images"
+               multiple />
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Save Property
+    </button>
+</form>

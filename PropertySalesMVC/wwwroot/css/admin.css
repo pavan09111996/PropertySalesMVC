@@ -1,0 +1,64 @@
+﻿body {
+    margin: 0;
+    background: #f5f7fb;
+    font-family: system-ui, -apple-system, "Segoe UI";
+}
+
+/* NAVBAR */
+.admin-navbar {
+    height: 56px;
+}
+
+/* LAYOUT */
+.admin-wrapper {
+    display: flex;
+    min-height: calc(100vh - 56px);
+}
+
+/* SIDEBAR */
+.admin-sidebar {
+    width: 240px;
+    background: #ffffff;
+    border-right: 1px solid #e5e7eb;
+    padding: 20px;
+}
+
+.menu-title {
+    font-size: 13px;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 15px;
+}
+
+.admin-sidebar .nav-link {
+    color: #374151;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+}
+
+    .admin-sidebar .nav-link:hover {
+        background: #eff6ff;
+        color: #1d4ed8;
+    }
+
+    .admin-sidebar .nav-link.active {
+        background: #2563eb;
+        color: #fff;
+    }
+
+/* CONTENT */
+.admin-content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+}
+
+/* FOOTER */
+.admin-footer {
+    background: #111827;
+    color: #e5e7eb;
+    text-align: center;
+    padding: 10px;
+    font-size: 14px;
+}

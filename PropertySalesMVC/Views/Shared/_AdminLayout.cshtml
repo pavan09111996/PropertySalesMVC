@@ -1,0 +1,56 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewData["Title"] - Admin</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/admin.css" />
+
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+
+    <!-- TOP NAVBAR -->
+    <nav class="navbar navbar-dark bg-dark px-3 admin-navbar">
+        <span class="navbar-brand">Admin Dashboard</span>
+
+        <a href="/Admin/Logout" class="btn btn-outline-light btn-sm">
+            Logout
+        </a>
+    </nav>
+
+    <!-- LAYOUT -->
+    <div class="admin-wrapper">
+
+        <!-- SIDEBAR -->
+        <aside class="admin-sidebar">
+            <h6 class="menu-title">Menu</h6>
+
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link active" href="/Admin/Dashboard">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/Admin/AddProperty">Add Property</a>
+                </li>
+            </ul>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="admin-content">
+            @RenderBody()
+        </main>
+
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="admin-footer">
+        © 2026 PropertySales | Admin Panel
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>
