@@ -21,4 +21,8 @@
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\css\property.css" />
+  </ItemGroup>
+
 </Project>

@@ -1,50 +1,53 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+    font-family: system-ui, -apple-system, "Segoe UI";
+    background-color: #f9fafb;
+    color: #111827;
+}
+h1, h2, h3 {
+    color: #111827;
 }
 
-/* =========================
-   BODY BACKGROUND IMAGE
-   ========================= */
-
-.body-bg {
-    min-height: calc(100vh - 120px);
-    background-image: url('/images/property-bg.jpg');
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    position: relative;
+.location {
+    color: #334155;
 }
 
-    /* Dark overlay for readability */
-    .body-bg::before {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.35);
-    }
+.price {
+    color: #15803D;
+    font-weight: 700;
+}
 
-    /* Keep page content above overlay */
-    .body-bg .container {
-        position: relative;
-        z-index: 1;
-    }
+
+/* NAVBAR */
+.navbar-brand {
+    padding: 0;
+    margin-right: 24px;
+}
+
+
+/* FOOTER */
+.site-footer {
+    background: #111827;
+    color: #e5e7eb;
+    padding: 20px 0;
+    font-size: 14px;
+}
+/* BRAND LOGO */
+.brand-logo {
+    height: 60px;
+    width: auto;
+    object-fit: contain;
+    filter: saturate(1.05) contrast(1.05);
+}
+
+
+/* Navbar polish */
+.navbar {
+    background: #ffffff;
+    box-shadow: 0 1px 12px rgba(15, 23, 42, 0.06);
+}
+
+
+.navbar-brand {
+    padding: 0;
+}
 

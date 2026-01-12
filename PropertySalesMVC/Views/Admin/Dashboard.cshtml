@@ -1,32 +1,104 @@
-﻿@{
-    ViewData["Title"] = "Admin Dashboard";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+﻿@model List<PropertyViewModel>
+
+@{
+    ViewData["Title"] = "All Properties";
+    Layout = "_AdminLayout";
 }
 
-<h2>Dashboard</h2>
-<hr />
+@section Styles {
+    <link rel="stylesheet" href="~/css/admin-properties.css" />
+}
 
-<div class="row mt-4">
+<h2 class="page-title">All Properties</h2>
 
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3 text-center">
-            <h5>Total Properties</h5>
-            <h3>10</h3>
+<div class="property-grid">
+
+    @foreach (var property in Model)
+    {
+        <div class="property-card">
+
+            <!-- IMAGE -->
+            <div class="image-wrapper">
+
+                <button class="nav-arrow left" onclick="scrollImages(this, -1)">❮</button>
+
+                <div class="image-strip">
+                    @if (property.ImagesBase64?.Any() == true)
+                    {
+                        foreach (var img in property.ImagesBase64)
+                        {
+                            <img src="data:image/jpeg;base64,@img" />
+                        }
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image.png" />
+                    }
+                </div>
+
+                <button class="nav-arrow right" onclick="scrollImages(this, 1)">❯</button>
+
+            </div>
+
+
+            <!-- CONTENT -->
+            <div class="card-body">
+                <h5>@property.Title</h5>
+
+                <p class="location">📍 @property.Location</p>
+
+                <p class="price">₹ @property.Price.ToString("N0")</p>
+
+                <p class="desc">@property.Description</p>
+
+                <div class="actions">
+                    <a href="/Admin/EditProperty/@property.PropertyId"
+                       class="btn btn-sm btn-primary">
+                        Edit
+                    </a>
+
+                    @* <a href="/Admin/DeleteProperty/@property.PropertyId"
+                       class="btn btn-sm btn-outline-danger">
+                        Delete
+                    </a> *@
+
+                    <form asp-action="DeleteProperty"
+                          asp-controller="Admin"
+                          method="post"
+                          onsubmit="return confirm('Are you sure you want to delete this property?');"
+                          class="d-inline">
+
+                        @Html.AntiForgeryToken()
+
+                        <input type="hidden" name="propertyId" value="@property.PropertyId" />
+
+                        <button type="submit"
+                                class="btn btn-sm btn-outline-danger">
+                            Delete
+                        </button>
+                    </form>
+                </div>
+            </div>
+
         </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3 text-center">
-            <h5>Active Listings</h5>
-            <h3>8</h3>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card shadow-sm p-3 text-center">
-            <h5>Sold Properties</h5>
-            <h3>2</h3>
-        </div>
-    </div>
+    }
 
 </div>
+
+@section Scripts {
+    <script>
+        function scrollImages(button, direction) {
+            const wrapper = button.closest('.image-wrapper');
+            const strip = wrapper.querySelector('.image-strip');
+            const img = strip.querySelector('img');
+
+            if (!img) return;
+
+            const scrollAmount = img.clientWidth;
+            strip.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+    </script>
+}

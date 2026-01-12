@@ -1,8 +1,78 @@
-﻿@{
-    ViewData["Title"] = "Home Page1";
+﻿@model List<PropertyViewModel>
+
+@{
+    ViewData["Title"] = "Ronak Estate - Find Your Dream Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Ronak Real Estate</h1>
-    @* <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p> *@
-</div>
+@section Styles {
+    <link rel="stylesheet" href="~/css/landing.css" />
+}
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="hero-content">
+        <h1>Find Your Dream Property</h1>
+        <p>Buy premium homes, apartments, and commercial spaces across India</p>
+
+        <a href="#properties" class="btn-primary">
+            Browse Properties
+        </a>
+    </div>
+</section>
+
+<!-- PROPERTIES -->
+<section id="properties" class="properties-section">
+
+    <h2 class="section-title">Featured Properties</h2>
+
+    <div class="property-grid">
+
+        @foreach (var property in Model)
+        {
+            <div class="property-card">
+
+                <!-- IMAGE -->
+                <div class="property-image">
+                    <span class="badge-featured">Featured</span>
+
+                    @if (property.ImagesBase64?.Any() == true)
+                    {
+                        <img src="data:image/jpeg;base64,@property.ImagesBase64.First()" />
+                    }
+                    else
+                    {
+                        <img src="~/images/no-image.png" />
+                    }
+            </div>
+
+            <!-- BODY -->
+            <div class="property-body">
+
+                <h3 class="property-title">@property.Title</h3>
+
+                <p class="property-location">📍 @property.Location</p>
+
+                <div class="property-price">
+                    ₹ @property.Price.ToString("N0")
+                </div>
+
+                <p class="property-desc">
+                    @(property.Description.Length > 90
+                                        ? property.Description.Substring(0, 90) + "..."
+                                        : property.Description)
+                </p>
+
+                    <div class="property-footer">
+                        <a href="@Url.Action("PropertyDetails", "Home", new { id = property.PropertyId })"
+                           class="btn-primary">
+                            View Details
+                        </a>
+                    </div>
+
+                </div>
+            </div>
+                }
+
+    </div>
+</section>
+

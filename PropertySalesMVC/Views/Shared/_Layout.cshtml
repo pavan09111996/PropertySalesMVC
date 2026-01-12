@@ -1,151 +1,89 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PropertySales</title>
 
+    <title>@ViewData["Title"] - Ronak Estate</title>
+
+    <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/PropertySalesMVC.styles.css" asp-append-version="true" />
 
-    <!-- Font Awesome -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <!-- Site CSS -->
+    <link rel="stylesheet" href="~/css/site.css" />
+    <script src="~/js/adminlogin.js"></script>
+    @RenderSection("Styles", required: false)
 </head>
+
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <nav class="navbar navbar-expand-sm border-bottom box-shadow mb-3"
-             style="background-color:rgb(9 137 241 / 48%);">
-            <div class="container-fluid">
+    <!-- HEADER / NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
 
-                <!-- Brand -->
-                <a class="navbar-brand fw-bold text-dark"
-                   asp-controller="Home" asp-action="Index">
-                    PropertySalesMVC
-                </a>
+            <a class="navbar-brand d-flex align-items-center" href="/">
+                <img src="~/images/ronak-logo.png"
+                     alt="Ronak Estate Consultant"
+                     class="brand-logo" />
+            </a>
 
-                <button class="navbar-toggler" type="button"
-                        data-bs-toggle="collapse"
-                        data-bs-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
 
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-                    <!-- Left Menu -->
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold"
-                               asp-controller="Home" asp-action="Index">
-                                Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark fw-semibold"
-                               asp-controller="Home" asp-action="Privacy">
-                                Privacy
-                            </a>
-                        </li>
-                    </ul>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
 
-                    <!-- Admin Login Button (Right Corner) -->
-                    <button class="btn btn-outline-dark fw-semibold"
-                            data-bs-toggle="modal"
-                            data-bs-target="#adminLoginModal">
-                        Admin Login
-                    </button>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
 
-                </div>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Home/AllProperties">Properties</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Home/Contact">Contact</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="btn btn-primary ms-lg-3" 
+                        data-bs-target="#adminLoginModal" 
+                        data-bs-toggle="modal">
+                            Admin Login
+                        </a>
+                    </li>
+
+                </ul>
             </div>
-        </nav>
-    </header>
 
+        </div>
+    </nav>
 
-    <!-- BODY WITH BACKGROUND IMAGE -->
-    <div class="container" style="background-image: url('https://wallpaperbat.com/img/9729835-real-estate-wallpaper.jpg');
-                             background-size: cover;
-                             background-position: center;
-                             height: 100vh;">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-
+    <!-- MAIN CONTENT -->
+    <main role="main">
+        @RenderBody()
+    </main>
 
     <!-- FOOTER -->
-    <footer style="background-color:rgb(9 137 241 / 48%);" class="mt-5">
-        <div class="container py-4">
-            <div class="row text-dark gy-4">
-
-                <!-- Company Info -->
-                <div class="col-lg-4 col-md-6">
-                    <h5 class="fw-bold mb-2">Ronak Estate Consultant</h5>
-                    <p class="mb-1">Owner: Rajesh Punjabi</p>
-                    <p class="mb-1">📞 98673 13626</p>
-                    <p class="mb-3">📧 ronak.estate@rediffmail.com</p>
-
-                    <div class="d-flex align-items-center gap-3">
-                        <a href="https://www.instagram.com/ronak.estate" target="_blank"
-                           class="text-dark text-decoration-none d-flex align-items-center gap-2">
-                            <i class="fab fa-instagram fs-4"></i>
-                            <span class="small">ronak.estate</span>
-                        </a>
-
-                        <a href="https://www.facebook.com/ronakestateconsultant" target="_blank"
-                           class="text-dark text-decoration-none d-flex align-items-center gap-2">
-                            <i class="fab fa-facebook fs-4"></i>
-                            <span class="small">Ronak Estate</span>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Head Office -->
-                <div class="col-lg-4 col-md-6">
-                    <h5 class="fw-bold mb-2">Head Office</h5>
-                    <p class="mb-0 small">
-                        Shop No. 4, Balvikrupa CHS Ltd,<br />
-                        Sector-2, Charkop,<br />
-                        Kandivali (W), Mumbai – 400067
-                    </p>
-                </div>
-
-                <!-- Branch Office -->
-                <div class="col-lg-4 col-md-6">
-                    <h5 class="fw-bold mb-2">Branch Office</h5>
-                    <p class="mb-0 small">
-                        Shop No. 8, Bliss Niketan,<br />
-                        Behind Billabong School,<br />
-                        Jankalyan Nagar, Malad (W),<br />
-                        Mumbai – 400095
-                    </p>
-                </div>
-
-            </div>
-
-            <hr class="my-4 border-dark" />
-
-            <div class="text-center small fw-semibold text-dark">
-                © 2026 Ronak Estate Consultant | All Rights Reserved
-            </div>
+    <footer class="site-footer mt-5">
+        <div class="container text-center">
+            <p class="mb-1 fw-bold">Ronak Estate</p>
+            <p class="mb-0">© 2026 PropertySales. All rights reserved.</p>
         </div>
     </footer>
 
-    <!-- SCRIPTS -->
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <!-- JS -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-    <script src="~/js/adminlogin.js"></script>
+    <script src="~/js/site.js"></script>
 
-    @await RenderSectionAsync("Scripts", required: false)
+    @RenderSection("Scripts", required: false)
 
 
-    @*  //popup modal  *@
-
-    <!-- ADMIN LOGIN MODAL -->
+     @* Admin Login PopUp *@
     <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -206,7 +144,6 @@
             </div>
         </div>
     </div>
-
-
 </body>
+
 </html>

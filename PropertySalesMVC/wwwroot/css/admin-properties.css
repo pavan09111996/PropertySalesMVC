@@ -1,0 +1,105 @@
+﻿.page-title {
+    margin-bottom: 25px;
+    font-weight: 600;
+}
+
+/* GRID */
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+/* CARD */
+.property-card {
+    background: #ffffff;
+    border-radius: 14px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+/* IMAGE */
+.card-image img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+
+/* BODY */
+.card-body {
+    padding: 15px;
+}
+
+.location {
+    color: #6b7280;
+    font-size: 14px;
+}
+
+.price {
+    color: #16a34a;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.desc {
+    font-size: 14px;
+    color: #374151;
+    max-height: 44px;
+    overflow: hidden;
+}
+
+/* ACTIONS */
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+/* IMAGE WRAPPER */
+.image-wrapper {
+    position: relative;
+    overflow: hidden;
+}
+
+/* IMAGE STRIP */
+.image-strip {
+    display: flex;
+    overflow-x: hidden;
+}
+
+    .image-strip img {
+        min-width: 100%;
+        height: 180px;
+        object-fit: cover;
+    }
+
+/* ARROWS */
+.nav-arrow {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .nav-arrow.left {
+        left: 8px;
+    }
+
+    .nav-arrow.right {
+        right: 8px;
+    }
+
+    .nav-arrow:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+
