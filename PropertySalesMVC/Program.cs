@@ -1,14 +1,29 @@
 ﻿using PropertySalesMVC;
+using PropertySalesMVC.Helpers;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// =======================
+// ADD SERVICES
+// =======================
 builder.Services.AddControllersWithViews();
-builder.Services.AddScoped<DbHelper>();   // ✅ ADD HERE
+
+// Session configuration (REQUIRED)
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// ADO.NET helper
+builder.Services.AddScoped<DbHelper>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// =======================
+// MIDDLEWARE PIPELINE
+// =======================
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -19,6 +34,9 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// ENABLE SESSION (VERY IMPORTANT)
+app.UseSession();
 
 app.UseAuthorization();
 

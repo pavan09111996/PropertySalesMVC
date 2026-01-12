@@ -27,12 +27,12 @@ namespace PropertySalesMVC.Controllers
                 {
                     list.Add(new Property
                     {
-                        PropertyId = (int)dr["PropertyId"],
+                        //PropertyId = (int)dr["PropertyId"],
                         Title = dr["Title"].ToString(),
                         Location = dr["Location"].ToString(),
                         Price = (decimal)dr["Price"],
                         Description = dr["Description"]?.ToString(),
-                        ImageUrl = dr["ImageUrl"]?.ToString()
+                        //ImageUrl = dr["ImageUrl"]?.ToString()
                     });
                 }
             }
