@@ -77,18 +77,86 @@ body {
    FOOTER
 ================================ */
 .site-footer {
-    background: linear-gradient(135deg, #020617, #020617);
-    color: #ffffff;
-    text-align: center;
-    padding: 24px 0;
-    flex-shrink: 0;
+    background: linear-gradient(135deg, #050b1c, #020617);
+    color: #fff;
+    padding: 60px 0 25px;
+    font-size: 14px;
 }
 
-    .site-footer p {
-        margin: 0;
-        font-size: 14px;
-        color: #CBD5E1;
+.footer-title {
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.footer-heading {
+    font-weight: 600;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    font-size: 13px;
+}
+
+.footer-text {
+    color: #9aa4b2;
+    line-height: 1.6;
+}
+
+.site-footer a {
+    color: #e5e7eb;
+    text-decoration: none;
+}
+
+    .site-footer a:hover {
+        color: #38bdf8;
     }
+
+.site-footer hr {
+    border-color: rgba(255, 255, 255, 0.1);
+    margin: 20px 0;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    color: #9aa4b2;
+}
+
+/* ================================
+   SOCIAL ICON BRAND COLORS
+================================ */
+.social-icons a {
+    margin-left: 15px;
+    font-size: 22px; /* increased size */
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+    /* Instagram */
+    .social-icons a .fa-instagram {
+        color: #E1306C;
+    }
+
+    .social-icons a:hover .fa-instagram {
+        color: #F77737;
+    }
+
+    /* Facebook */
+    .social-icons a .fa-facebook-f {
+        color: #1877F2;
+    }
+
+    .social-icons a:hover .fa-facebook-f {
+        color: #145DBF;
+    }
+
+    /* Hover animation */
+    .social-icons a:hover {
+        transform: translateY(-2px);
+    }
+
+
+
 
 /* ================================
    UTILITIES
@@ -111,6 +179,7 @@ body {
         text-align: center;
     }
 }
+
 #mainPropertyImage {
     transition: opacity 0.2s ease;
 }

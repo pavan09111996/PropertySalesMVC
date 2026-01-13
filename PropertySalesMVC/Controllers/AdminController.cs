@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PropertySalesMVC.Filters;
+using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Models;
 using System.Data.SqlClient;
@@ -7,6 +10,7 @@ using System.Diagnostics;
 
 namespace PropertySalesMVC.Controllers
 {
+    
     public class AdminController : Controller
     {
         private readonly DbHelper _db;
@@ -19,10 +23,34 @@ namespace PropertySalesMVC.Controllers
         [HttpPost]
         public IActionResult Login(string adminId, string password)
         {
-            // TEMP login (for testing)
-            if (adminId == "admin" && password == "1234")
+            bool isValidAdmin = false;
+
+            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
             {
-                //HttpContext.Session.SetString("AdminLoggedIn", "true");
+                con.Open();
+
+                string query = @"
+            SELECT COUNT(1)
+            FROM AdminLoginDetails
+            WHERE AdminID = @AdminID
+              AND Password = @Password
+              AND IsActive = 1";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    cmd.Parameters.AddWithValue("@AdminID", adminId);
+                    cmd.Parameters.AddWithValue("@Password", password);
+
+                    isValidAdmin = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
+                }
+            }
+
+            if (isValidAdmin)
+            {
+                // ✅ CREATE SESSION
+                HttpContext.Session.SetString(SessionKeys.AdminName, adminId);
+                HttpContext.Session.SetString(SessionKeys.IsAdminLoggedIn, "true");
+
                 return Json(new { success = true });
             }
 
@@ -34,6 +62,7 @@ namespace PropertySalesMVC.Controllers
         }
 
 
+        [AdminAuthorize]
         public IActionResult Dashboard()
         {
             var properties = new Dictionary<int, PropertyViewModel>();
@@ -92,12 +121,14 @@ namespace PropertySalesMVC.Controllers
         }
 
         [HttpGet]
+        [AdminAuthorize]
         public IActionResult AddProperty()
         {
             return View();
         }
 
         [HttpPost]
+        [AdminAuthorize]
         public IActionResult AddProperty(
             string Title,
             string Location,
@@ -164,6 +195,7 @@ namespace PropertySalesMVC.Controllers
         }
 
         [HttpPost]
+        [AdminAuthorize]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteProperty(int propertyId)
         {
@@ -188,6 +220,9 @@ namespace PropertySalesMVC.Controllers
         public IActionResult Logout()
         {
             HttpContext.Session.Clear();
+
+            TempData["SuccessMessage"] = "Logged out successfully";
+
             return RedirectToAction("Index", "Home");
         }
     }
