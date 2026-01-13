@@ -14,14 +14,58 @@ namespace PropertySalesMVC.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int page = 1)
         {
+            const int pageSize = 6; // properties per page
 
             var properties = new Dictionary<int, PropertyViewModel>();
+            int totalRecords = 0;
 
-            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+            using (SqlConnection con = new SqlConnection(
+                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
             {
-                string query = @"
+                con.Open();
+
+               
+                using (SqlCommand countCmd = new SqlCommand(
+                    "SELECT COUNT(*) FROM Properties WHERE IsActive = 1", con))
+                {
+                    totalRecords = (int)countCmd.ExecuteScalar();
+                }
+
+                
+                List<int> propertyIds = new();
+
+                using (SqlCommand idCmd = new SqlCommand(@"
+            SELECT Id
+            FROM Properties
+            WHERE IsActive = 1
+            ORDER BY Id DESC
+            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY", con))
+                {
+                    idCmd.Parameters.AddWithValue("@Offset", (page - 1) * pageSize);
+                    idCmd.Parameters.AddWithValue("@PageSize", pageSize);
+
+                    using SqlDataReader idReader = idCmd.ExecuteReader();
+                    while (idReader.Read())
+                    {
+                        propertyIds.Add(idReader.GetInt32(0));
+                    }
+                }
+
+                if (propertyIds.Count == 0)
+                {
+                    return View(new PagedResult<PropertyViewModel>
+                    {
+                        Items = new List<PropertyViewModel>(),
+                        CurrentPage = page,
+                        PageSize = pageSize,
+                        TotalRecords = totalRecords
+                    });
+                }
+
+                
+                string query = $@"
             SELECT 
                 p.Id,
                 p.Title,
@@ -29,22 +73,19 @@ namespace PropertySalesMVC.Controllers
                 p.Price,
                 p.Description,
                 i.ImageBase64
-                FROM Properties p
-                LEFT JOIN PropertyImages i
+            FROM Properties p
+            LEFT JOIN PropertyImages i
                 ON p.Id = i.PropertyId
-                where p.IsActive = 1
-                 ";
+            WHERE p.Id IN ({string.Join(",", propertyIds)})
+            ORDER BY p.Id DESC";
 
-                SqlCommand cmd = new SqlCommand(query, con);
-                con.Open();
-
+                using (SqlCommand cmd = new SqlCommand(query, con))
                 using (SqlDataReader reader = cmd.ExecuteReader())
                 {
                     while (reader.Read())
                     {
                         int propertyId = reader.GetInt32(0);
 
-                        // Create parent once
                         if (!properties.ContainsKey(propertyId))
                         {
                             properties[propertyId] = new PropertyViewModel
@@ -57,7 +98,6 @@ namespace PropertySalesMVC.Controllers
                             };
                         }
 
-                        // Add images (can be null because of LEFT JOIN)
                         if (!reader.IsDBNull(5))
                         {
                             properties[propertyId]
@@ -67,10 +107,21 @@ namespace PropertySalesMVC.Controllers
                     }
                 }
             }
-            var propertyCount = properties.Count;
-            ViewBag.PropertyCount = propertyCount;
-            return View(properties.Values.ToList());
+
+           
+            var model = new PagedResult<PropertyViewModel>
+            {
+                Items = properties.Values.ToList(),
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalRecords = totalRecords
+            };
+
+            ViewBag.PropertyCount = totalRecords;
+
+            return View(model);
         }
+
 
         public IActionResult Privacy()
         {
@@ -82,5 +133,70 @@ namespace PropertySalesMVC.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            ViewBag.Admin = GetActiveAdmin();
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Contact(ContactViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            AdminContactInfo admin = GetActiveAdmin();
+
+            if (admin == null)
+            {
+                ModelState.AddModelError("", "Contact service temporarily unavailable.");
+                return View(model);
+            }
+
+            string message =
+                "New Property Enquiry\n" +
+                "----------------------\n" +
+                $"Name: {model.Name}\n" +
+                $"Phone: {model.Phone}\n" +
+                "Customer Message:\n" +
+                $"{model.Message}\n\n" +
+                $"Assigned To: {admin.AdminName}\n" +
+                "Source: Website";
+
+            string whatsappUrl =
+                $"https://wa.me/{admin.WhatsApp}?text={Uri.EscapeDataString(message)}";
+
+            return Redirect(whatsappUrl);
+        }
+
+        private AdminContactInfo GetActiveAdmin()
+        {
+            using SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
+            con.Open();
+
+            using SqlCommand cmd = new SqlCommand(@"
+        SELECT TOP 1 AdminId, AdminName, Phone, WhatsApp, Email
+        FROM AdminMaster
+        WHERE IsActive = 1
+        ORDER BY CreatedOn DESC", con);
+
+            using SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return new AdminContactInfo
+                {
+                    AdminId = (int)dr["AdminId"],
+                    AdminName = dr["AdminName"].ToString(),
+                    Phone = dr["Phone"].ToString(),
+                    WhatsApp = dr["WhatsApp"].ToString(),
+                    Email = dr["Email"]?.ToString()
+                };
+            }
+
+            return null;
+        }
+
     }
 }

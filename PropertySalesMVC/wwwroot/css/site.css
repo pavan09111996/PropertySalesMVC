@@ -114,3 +114,101 @@ body {
 #mainPropertyImage {
     transition: opacity 0.2s ease;
 }
+
+
+.pager {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 40px;
+}
+
+    .pager a {
+        min-width: 42px;
+        height: 42px;
+        padding: 0 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        font-weight: 600;
+        color: #1e293b !important; 
+        text-decoration: none !important; 
+
+        box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+        transition: all 0.25s ease;
+    }
+
+        .pager a:hover {
+            background: #2563eb;
+            color: #ffffff !important;
+            border-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        .pager a.active {
+            background: #2563eb;
+            color: #ffffff !important;
+            border-color: #2563eb;
+            pointer-events: none;
+        }
+
+/* =========================
+   PROFESSIONAL PAGINATION
+========================= */
+
+.custom-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    padding: 0;
+    margin: 48px 0 0;
+    list-style: none;
+}
+
+    .custom-pagination li {
+        list-style: none;
+    }
+
+    .custom-pagination a {
+        min-width: 44px;
+        height: 44px;
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        font-size: 15px;
+        font-weight: 600;
+        color: #334155 !important;
+        text-decoration: none !important;
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.06);
+        transition: all 0.25s ease;
+    }
+
+        /* Hover – subtle, premium */
+        .custom-pagination a:hover {
+            background: #f1f5f9;
+            color: #0f172a !important;
+            transform: translateY(-2px);
+        }
+
+    /* Active Page */
+    .custom-pagination .active a {
+        background: #1e3a8a; /* deep royal blue */
+        color: #ffffff !important;
+        border-color: #1e3a8a;
+        box-shadow: 0 10px 22px rgba(30, 58, 138, 0.35);
+        pointer-events: none;
+    }
+
+    /* Disabled */
+    .custom-pagination .disabled a {
+        opacity: 0.45;
+        pointer-events: none;
+        background: #ffffff;
+    }

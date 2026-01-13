@@ -1,4 +1,4 @@
-﻿@model List<PropertyViewModel>
+﻿@model PagedResult<PropertyViewModel>
 
 @{
     ViewData["Title"] = "Ronak Estate - Find Your Dream Home";
@@ -23,26 +23,30 @@
 <!-- PROPERTIES -->
 <section id="properties" class="properties-section">
 
-    <h2 class="section-title">Featured Properties</h2>
+    <h2 class="section-title">
+        Featured Properties
+        <span class="property-count">(@Model.TotalRecords)</span>
+    </h2>
 
     <div class="property-grid">
-
-        @foreach (var property in Model)
+        @if (Model.Items != null && Model.Items.Any())
         {
-            <div class="property-card">
+            foreach (var property in Model.Items)
+            {
+                <div class="property-card">
 
-                <!-- IMAGE -->
-                <div class="property-image">
-                    <span class="badge-featured">Featured</span>
+                    <!-- IMAGE -->
+                    <div class="property-image">
+                        <span class="badge-featured">Featured</span>
 
-                    @if (property.ImagesBase64?.Any() == true)
-                    {
-                        <img src="data:image/jpeg;base64,@property.ImagesBase64.First()" />
-                    }
-                    else
-                    {
-                        <img src="~/images/no-image.png" />
-                    }
+                        @if (property.ImagesBase64?.Any() == true)
+                        {
+                            <img src="data:image/jpeg;base64,@property.ImagesBase64.First()" />
+                        }
+                        else
+                        {
+                            <img src="~/images/no-image.png" />
+                        }
             </div>
 
             <!-- BODY -->
@@ -57,22 +61,51 @@
                 </div>
 
                 <p class="property-desc">
-                    @(property.Description.Length > 90
+                    @(property.Description?.Length > 90
                                         ? property.Description.Substring(0, 90) + "..."
                                         : property.Description)
                 </p>
 
-                    <div class="property-footer">
-                        <a href="@Url.Action("PropertyDetails", "Property", new { id = property.PropertyId })"
-                           class="btn-primary">
-                            View Details
-                        </a>
+                        <div class="property-footer">
+                            <a href="@Url.Action("PropertyDetails", "Property", new { id = property.PropertyId })"
+                               class="btn-primary">
+                                View Details
+                            </a>
+                        </div>
+
                     </div>
-
                 </div>
-            </div>
                 }
-
+        }
+        else
+        {
+            <p class="no-properties">No properties available.</p>
+        }
     </div>
+
+    <!-- PAGINATION -->
+    @if (Model.TotalPages > 1)
+    {
+        <nav class="pager">
+            @if (Model.HasPrevious)
+            {
+                <a href="?page=@(Model.CurrentPage - 1)#properties">‹ Prev</a>
+            }
+
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <a href="?page=@i#properties"
+                   class="@(i == Model.CurrentPage ? "active" : "")">
+                    @i
+                </a>
+            }
+
+            @if (Model.HasNext)
+            {
+                <a href="?page=@(Model.CurrentPage + 1)#properties">Next ›</a>
+            }
+        </nav>
+    }
+
 </section>
 

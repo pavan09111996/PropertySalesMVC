@@ -1,0 +1,87 @@
+﻿@{
+    ViewData["Title"] = "Contact Us";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/contact.css" />
+}
+<section class="contact-wrapper">
+
+    <!-- LEFT : INFO -->
+    <div class="contact-info">
+        <h1>Get in Touch</h1>
+        <p class="subtitle">
+            Contact Ronak Estate for property details, site visits,
+            pricing and availability.
+        </p>
+
+        <div class="contact-details">
+            <div class="contact-item">
+                <span class="icon">📞</span>
+                <div>
+                    <label>Call Us</label>
+                    <a href="tel:@ViewBag.Admin.Phone">@ViewBag.Admin.Phone</a>
+                </div>
+            </div>
+
+            <div class="contact-item">
+                <span class="icon">💬</span>
+                <div>
+                    <label>WhatsApp</label>
+                    <a href="https://wa.me/@ViewBag.Admin.WhatsApp" target="_blank">
+                        Chat on WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <div class="contact-item">
+                <span class="icon">📍</span>
+                <div>
+                    <label>Office</label>
+                    <span>Mumbai, Maharashtra</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT : FORM -->
+    <div class="contact-form-card">
+        <h3>Send a Message</h3>
+
+        <form method="post" asp-action="Contact" asp-controller="Home">
+            <div class="form-group">
+                <label>Your Name</label>
+                <input type="text"
+                       name="Name"
+                       placeholder="Enter your name"
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel"
+                       name="Phone"
+                       placeholder="Enter phone number"
+                       required />
+            </div>
+
+            <div class="form-group">
+                <label>Message</label>
+                <textarea name="Message"
+                          rows="4"
+                          placeholder="I am interested in a property..."
+                          required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                Send Message
+            </button>
+
+            <p class="form-note">
+                We usually respond within a few hours.
+            </p>
+
+        </form>
+    </div>
+
+</section>

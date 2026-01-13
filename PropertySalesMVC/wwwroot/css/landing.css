@@ -203,8 +203,11 @@ body {
     margin-bottom: 16px;
 }
 
+
 /* FOOTER */
 .property-footer {
     display: flex;
     justify-content: flex-end;
 }
+
+
