@@ -1,0 +1,99 @@
+﻿@model PropertyViewModel
+<link rel="stylesheet" href="~/css/property-details.css" />
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<section class="property-details-wrapper">
+
+    <!-- ===============================
+         LEFT : IMAGE GALLERY
+    ================================ -->
+    <div class="property-gallery">
+
+        <!-- MAIN IMAGE -->
+        <div class="main-image">
+            @if (Model.ImagesBase64 != null && Model.ImagesBase64.Any())
+            {
+                <img id="mainPropertyImage"
+                     src="data:image/jpeg;base64,@Model.ImagesBase64.First()"
+                     alt="Property Image" />
+            }
+            else
+            {
+                <img src="~/images/no-image.png" alt="No Image" />
+            }
+        </div>
+
+        <!-- THUMBNAILS -->
+        @if (Model.ImagesBase64 != null && Model.ImagesBase64.Count > 1)
+        {
+            <div class="thumbnail-row">
+                @foreach (var img in Model.ImagesBase64)
+                {
+                    <img src="data:image/jpeg;base64,@img"
+                         class="thumbnail"
+                         onclick="changeMainImage(this)"
+                         alt="Property Thumbnail" />
+                }
+            </div>
+        }
+
+    </div>
+
+    <!-- ===============================
+         RIGHT : PROPERTY INFO CARD
+    ================================ -->
+    <div class="property-info-card">
+
+        <h1>@Model.Title</h1>
+
+        <p class="location">📍 @Model.Location</p>
+
+        <div class="price">
+            ₹ @Model.Price.ToString("N0")
+        </div>
+
+        <!-- PROPERTY SPECS -->
+        <div class="specs">
+            <span>🏠 2 BHK</span>
+            <span>📐 1200 sq.ft</span>
+            <span>🏗 Ready to Move</span>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <p class="description">
+            @Model.Description
+        </p>
+
+        <!-- ACTION BUTTONS -->
+        <div class="actions">
+            <a href="tel:+919999999999" class="cta-btn btn-call">
+                Call Now
+            </a>
+
+            <a href="https://wa.me/919999999999" class="cta-btn btn-whatsapp">
+                WhatsApp
+            </a>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ===============================
+     IMAGE TOGGLE SCRIPT
+================================ -->
+<script>
+    function changeMainImage(thumbnail) {
+        const mainImage = document.getElementById("mainPropertyImage");
+        mainImage.src = thumbnail.src;
+
+        document.querySelectorAll(".thumbnail").forEach(img => {
+            img.classList.remove("active-thumb");
+        });
+
+        thumbnail.classList.add("active-thumb");
+    }
+</script>
+
