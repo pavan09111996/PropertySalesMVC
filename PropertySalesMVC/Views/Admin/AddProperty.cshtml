@@ -3,47 +3,227 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="mb-4">Add New Property</h2>
+<style>
+    body {
+        background: #f5f7fb;
+    }
 
-<form method="post"
-      asp-controller="Admin"
-      asp-action="AddProperty"
-      enctype="multipart/form-data">
+    .property-card {
+        background: #ffffff;
+        border-radius: 16px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+        border: none;
+    }
 
-    <!-- Title -->
-    <div class="mb-3">
-        <label class="form-label">Property Title</label>
-        <input type="text" class="form-control" name="Title" required />
+    .property-header {
+        background: linear-gradient(135deg, #eef3ff, #f8f9ff);
+        border-bottom: 1px solid #e5e9f2;
+        padding: 20px 28px;
+        border-radius: 16px 16px 0 0;
+    }
+
+        .property-header h4 {
+            color: #2d3748;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .property-header small {
+            color: #718096;
+        }
+
+    .form-floating label {
+        color: #6c757d;
+    }
+
+    .form-control {
+        border-radius: 10px;
+        border-color: #e2e8f0;
+    }
+
+        .form-control:focus {
+            border-color: #a3bffa;
+            box-shadow: 0 0 0 .15rem rgba(163, 191, 250, .35);
+        }
+
+    .upload-box {
+        border: 2px dashed #cbd5e1;
+        border-radius: 12px;
+        padding: 24px;
+        text-align: center;
+        background: #fafbff;
+        transition: .25s;
+        cursor: pointer;
+    }
+
+        .upload-box:hover {
+            background: #f1f5ff;
+            border-color: #a3bffa;
+        }
+
+        .upload-box i {
+            color: #5a67d8;
+        }
+
+    .btn-save {
+        background: #5a67d8;
+        border: none;
+        border-radius: 10px;
+        padding: 10px 26px;
+        font-weight: 600;
+    }
+
+        .btn-save:hover {
+            background: #4c51bf;
+        }
+
+    /* Image preview */
+    .image-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+        .image-preview img {
+            width: 100px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+</style>
+
+<div class="container-fluid mt-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-9">
+
+            <div class="card property-card">
+
+                <!-- HEADER -->
+                <div class="property-header">
+                    <h4>Add New Property</h4>
+                    <small>Enter property details carefully</small>
+                </div>
+
+                <!-- BODY -->
+                <div class="card-body p-4">
+
+                    <form method="post"
+                          asp-controller="Admin"
+                          asp-action="AddProperty"
+                          enctype="multipart/form-data">
+
+                        <div class="row g-3">
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text"
+                                           class="form-control"
+                                           name="Title"
+                                           placeholder="Property Title"
+                                           required />
+                                    <label>Property Title</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="text"
+                                           class="form-control"
+                                           name="Location"
+                                           placeholder="Location"
+                                           required />
+                                    <label>Location</label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           class="form-control"
+                                           name="Price"
+                                           placeholder="Price"
+                                           required />
+                                    <label>Price (₹)</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <textarea class="form-control"
+                                              name="Description"
+                                              placeholder="Description"
+                                              style="height:120px"></textarea>
+                                    <label>Description</label>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <label class="fw-semibold mb-2">
+                                    Property Images
+                                </label>
+
+                                <label class="upload-box w-100">
+                                    <input type="file"
+                                           name="Images"
+                                           multiple
+                                           hidden
+                                           onchange="previewImages(this)" />
+
+                                    <i class="fa-solid fa-cloud-arrow-up fa-2x mb-2"></i>
+
+                                    <p class="mb-0 fw-semibold">
+                                        Click to upload images
+                                    </p>
+
+                                    <small class="text-muted">
+                                        JPG / PNG • Multiple files supported
+                                    </small>
+                                </label>
+
+                                <!-- Image Preview -->
+                                <div id="imagePreview" class="image-preview"></div>
+                            </div>
+                        </div>
+
+                        <!-- ACTIONS -->
+                        <div class="d-flex justify-content-end mt-4 gap-2">
+                            <a asp-action="Dashboard"
+                               class="btn btn-light border px-4">
+                                Cancel
+                            </a>
+
+                            <button type="submit"
+                                    class="btn btn-save text-white px-4">
+                                Save Property
+                            </button>
+                        </div>
+
+                    </form>
+
+                </div>
+            </div>
+
+        </div>
     </div>
+</div>
 
-    <!-- Location -->
-    <div class="mb-3">
-        <label class="form-label">Location</label>
-        <input type="text" class="form-control" name="Location" required />
-    </div>
+<script>
+    function previewImages(input) {
+        const preview = document.getElementById('imagePreview');
+        preview.innerHTML = ''; // Clear previous previews
 
-    <!-- Price -->
-    <div class="mb-3">
-        <label class="form-label">Price</label>
-        <input type="number" class="form-control" name="Price" required />
-    </div>
-
-    <!-- Description -->
-    <div class="mb-3">
-        <label class="form-label">Description</label>
-        <textarea class="form-control" name="Description" rows="4"></textarea>
-    </div>
-
-    <!-- Multiple Images -->
-    <div class="mb-3">
-        <label class="form-label">Property Images</label>
-        <input type="file"
-               class="form-control"
-               name="Images"
-               multiple />
-    </div>
-
-    <button type="submit" class="btn btn-primary">
-        Save Property
-    </button>
-</form>
+        if (input.files) {
+            Array.from(input.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    }
+</script>
