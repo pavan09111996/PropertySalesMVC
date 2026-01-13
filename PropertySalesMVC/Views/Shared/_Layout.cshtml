@@ -3,30 +3,29 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>@ViewData["Title"] - Ronak Estate</title>
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-
-    <!-- Site CSS -->
-    <link rel="stylesheet" href="~/css/site.css" />
     <script src="~/js/adminlogin.js"></script>
+    <!-- Global Styles -->
+    
+
+    <!-- Page Specific Styles -->
     @RenderSection("Styles", required: false)
 </head>
-
 <body>
 
-    <!-- HEADER / NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-        <div class="container">
-
+    <!-- ===============================
+         HEADER / NAVBAR
+    ================================ -->
+    <header class="site-header">
+        <nav class="navbar navbar-expand-lg container">
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="~/images/ronak-logo.png"
-                     alt="Ronak Estate Consultant"
-                     class="brand-logo" />
+                     alt="Ronak Estate"
+                     class="logo" />
             </a>
-
 
             <button class="navbar-toggler" type="button"
                     data-bs-toggle="collapse"
@@ -34,56 +33,53 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-
+            <div class="collapse navbar-collapse justify-content-end" id="mainNav">
+                <ul class="navbar-nav align-items-center gap-3">
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="/Home/AllProperties">Properties</a>
+                        <a class="nav-link" href="/#properties">Properties</a>
                     </li>
-
                     <li class="nav-item">
                         <a class="nav-link" href="/Home/Contact">Contact</a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="btn btn-primary ms-lg-3" 
-                        data-bs-target="#adminLoginModal" 
-                        data-bs-toggle="modal">
+                        <a href="/Admin/Login" class="btn-admin-login" 
+                        data-bs-toggle="modal"
+                           data-bs-target="#adminLoginModal">
                             Admin Login
                         </a>
                     </li>
-
                 </ul>
             </div>
+        </nav>
+    </header>
 
-        </div>
-    </nav>
-
-    <!-- MAIN CONTENT -->
-    <main role="main">
+    <!-- ===============================
+         MAIN CONTENT (STICKY FOOTER)
+    ================================ -->
+    <main class="site-main">
         @RenderBody()
     </main>
 
-    <!-- FOOTER -->
-    <footer class="site-footer mt-5">
-        <div class="container text-center">
-            <p class="mb-1 fw-bold">Ronak Estate</p>
-            <p class="mb-0">© 2026 PropertySales. All rights reserved.</p>
+    <!-- ===============================
+         FOOTER
+    ================================ -->
+    <footer class="site-footer">
+        <div class="container">
+            <p class="mb-0">
+                Ronak Estate<br />
+                © 2026 PropertySales. All rights reserved.
+            </p>
         </div>
     </footer>
 
-    <!-- JS -->
+    <!-- Scripts -->
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js"></script>
-
+    <link rel="stylesheet" href="~/css/site.css" />
     @RenderSection("Scripts", required: false)
 
-
-     @* Admin Login PopUp *@
     <div class="modal fade" id="adminLoginModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -145,5 +141,4 @@
         </div>
     </div>
 </body>
-
 </html>

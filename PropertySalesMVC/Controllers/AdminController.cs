@@ -33,9 +33,7 @@ namespace PropertySalesMVC.Controllers
             });
         }
 
-        // ========================
-        // DASHBOARD
-        // ========================
+
         public IActionResult Dashboard()
         {
             var properties = new Dictionary<int, PropertyViewModel>();
@@ -162,7 +160,7 @@ namespace PropertySalesMVC.Controllers
                 #endregion
             }
 
-            return RedirectToAction("AllProperties");
+            return RedirectToAction("Dashboard");
         }
 
         [HttpPost]

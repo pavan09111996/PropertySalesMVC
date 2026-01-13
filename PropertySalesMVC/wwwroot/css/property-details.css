@@ -51,6 +51,11 @@
             opacity: 1;
         }
 
+.thumbnail.active-thumb {
+    outline: 3px solid #2563EB;
+    opacity: 1;
+}
+
 /* ================================
    PROPERTY INFO CARD
 ================================ */
@@ -178,3 +183,50 @@
             font-size: 24px;
         }
 }
+/* Common CTA button base */
+.cta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 26px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 12px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+
+/* CALL NOW (Primary Blue) */
+.btn-call {
+    background: linear-gradient(135deg, #1f4fd8, #163db3);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(31, 79, 216, 0.25);
+}
+
+    .btn-call:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 16px 34px rgba(31, 79, 216, 0.35);
+        background: linear-gradient(135deg, #163db3, #0f2f8a);
+    }
+
+/* WHATSAPP (Premium Green) */
+.btn-whatsapp {
+    background: linear-gradient(135deg, #25d366, #1ebd5a);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(37, 211, 102, 0.28);
+}
+
+    .btn-whatsapp:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 18px 36px rgba(37, 211, 102, 0.38);
+        background: linear-gradient(135deg, #1ebd5a, #189d4a);
+    }
+
+/* Optional: subtle press feedback */
+.cta-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+
