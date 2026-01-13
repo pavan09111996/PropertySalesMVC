@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using PropertySalesMVC.Filters;
+using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Models;
 using System.Data;
 using System.Data.SqlClient;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PropertySalesMVC.Controllers
 {
@@ -38,8 +41,17 @@ namespace PropertySalesMVC.Controllers
                 }
             }
 
+
             return View(list);
         }
+
+
+
+        
+
+
+
+
 
         [HttpGet]
         public IActionResult PropertyDetails(int id)
@@ -136,6 +148,7 @@ namespace PropertySalesMVC.Controllers
 
 
         [HttpPost]
+        [AdminAuthorize]
         [ValidateAntiForgeryToken]
         public IActionResult EditProperty(EditPropertyViewModel model)
         {
