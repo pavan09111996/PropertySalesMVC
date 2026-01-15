@@ -1,78 +1,71 @@
-﻿.page-title {
+﻿/* ============================
+   ADMIN – PROPERTY LISTING UI
+   Professional Real Estate CRM
+============================= */
+
+/* PAGE TITLE */
+.page-title {
     margin-bottom: 25px;
-    font-weight: 600;
+    font-weight: 700;
+    font-size: 26px;
+    color: #0F172A;
 }
 
-/* GRID */
+/* ============================
+   GRID
+============================= */
+
 .property-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 24px;
 }
 
-/* CARD */
+/* ============================
+   CARD
+============================= */
+
 .property-card {
-    background: #ffffff;
-    border-radius: 14px;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    background: #FFFFFF;
+    border-radius: 16px;
+    border: 1px solid #E2E8F0;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
     overflow: hidden;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-/* IMAGE */
-.card-image img {
-    width: 100%;
-    height: 180px;
-    object-fit: cover;
+.property-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 45px rgba(15, 23, 42, 0.15);
 }
 
-/* BODY */
-.card-body {
-    padding: 15px;
-}
+/* ============================
+   IMAGE / CAROUSEL
+============================= */
 
-.location {
-    color: #6b7280;
-    font-size: 14px;
-}
-
-.price {
-    color: #16a34a;
-    font-weight: 600;
-    margin-bottom: 8px;
-}
-
-.desc {
-    font-size: 14px;
-    color: #374151;
-    max-height: 44px;
-    overflow: hidden;
-}
-
-/* ACTIONS */
-.actions {
-    display: flex;
-    gap: 10px;
-    margin-top: 12px;
-}
-/* IMAGE WRAPPER */
 .image-wrapper {
     position: relative;
     overflow: hidden;
+    background: #F1F5F9;
 }
 
-/* IMAGE STRIP */
 .image-strip {
     display: flex;
-    overflow-x: hidden;
+    overflow: hidden;
+    scroll-behavior: smooth;
 }
 
-    .image-strip img {
-        min-width: 100%;
-        height: 180px;
-        object-fit: cover;
-    }
+.image-strip img {
+    min-width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+}
 
-/* ARROWS */
+/* ============================
+   NAV ARROWS
+============================= */
+
 .nav-arrow {
     position: absolute;
     top: 50%;
@@ -81,25 +74,154 @@
     height: 34px;
     border-radius: 50%;
     border: none;
-    background: rgba(0, 0, 0, 0.6);
-    color: #fff;
+    background: rgba(15, 23, 42, 0.65);
+    color: #FFFFFF;
     font-size: 18px;
     cursor: pointer;
     z-index: 5;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: background 0.2s ease, transform 0.15s ease;
 }
 
-    .nav-arrow.left {
-        left: 8px;
+.nav-arrow.left {
+    left: 10px;
+}
+
+.nav-arrow.right {
+    right: 10px;
+}
+
+.nav-arrow:hover {
+    background: rgba(15, 23, 42, 0.85);
+    transform: translateY(-50%) scale(1.08);
+}
+
+/* ============================
+   CARD BODY
+============================= */
+
+.card-body {
+    padding: 16px 18px;
+}
+
+/* PROPERTY TITLE */
+.card-body h5 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0F172A;
+    margin-bottom: 6px;
+}
+
+/* LOCATION */
+.location {
+    color: #64748B;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* PRICE */
+.price {
+    color: #16A34A;
+    font-weight: 700;
+    font-size: 15px;
+    margin: 10px 0 6px;
+}
+
+/* DESCRIPTION */
+.desc {
+    font-size: 14px;
+    color: #475569;
+    max-height: 44px;
+    overflow: hidden;
+    line-height: 1.4;
+}
+
+/* ============================
+   ACTIONS
+============================= */
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+/* ACTION BUTTONS (OPTIONAL STYLE) */
+.actions .btn {
+    border-radius: 999px;
+    padding: 6px 16px;
+    font-weight: 600;
+}
+
+/* ============================
+   RESPONSIVE
+============================= */
+
+@media (max-width: 768px) {
+    .property-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     }
 
-    .nav-arrow.right {
-        right: 8px;
+    .image-strip img {
+        height: 160px;
     }
+}
+/* =========================
+   TOAST – SUCCESS
+========================= */
 
-    .nav-arrow:hover {
-        background: rgba(0, 0, 0, 0.8);
-    }
+.toast-success {
+    background-color: #22C55E !important; /* Emerald green */
+    color: #ffffff !important;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(34, 197, 94, 0.4);
+}
+
+.toast-success .toast-body {
+    font-weight: 600;
+}
+
+.toast-success .btn-close {
+    filter: invert(1);
+}
+/* =========================
+   ADMIN SUCCESS TOAST
+========================= */
+
+.toast-admin-success {
+    background: #1E293B; /* Same as header */
+    color: #FFFFFF;
+    border-radius: 14px;
+    box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
+    min-width: 320px;
+    overflow: hidden;
+}
+
+/* Left success accent */
+.toast-admin-success .toast-accent {
+    width: 6px;
+    background: #22C55E;
+}
+
+/* Body */
+.toast-admin-success .toast-body {
+    font-size: 14px;
+    font-weight: 600;
+    padding: 14px 16px;
+}
+
+/* Close button */
+.toast-admin-success .btn-close {
+    filter: invert(1);
+    opacity: 0.7;
+}
+
+.toast-admin-success .btn-close:hover {
+    opacity: 1;
+}
+
 

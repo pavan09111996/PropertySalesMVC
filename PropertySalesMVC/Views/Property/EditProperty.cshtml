@@ -1,121 +1,143 @@
 ﻿@model EditPropertyViewModel
 @{
     ViewData["Title"] = "Edit Property";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
+
 <link href="~/css/property-update.css" rel="stylesheet" />
+
 <div class="edit-property-container">
     <h2>Edit Property</h2>
     <p class="edit-subtitle">Update property details and manage images</p>
 
     <form asp-action="EditProperty"
           asp-controller="Property"
-      method="post"
-      enctype="multipart/form-data">
+          method="post"
+          enctype="multipart/form-data">
 
-    @Html.AntiForgeryToken()
-    <input type="hidden" asp-for="PropertyId" />
-        <hr class="form-divider">
-    <div class="form-group mb-3">
-        <label>Title</label>
-        <input asp-for="Title" class="form-control" />
-    </div>
-        <hr class="form-divider">
-    <div class="form-group mb-3">
-        <label>Location</label>
-        <input asp-for="Location" class="form-control" />
-    </div>
-        <hr class="form-divider">
-    <div class="form-group mb-3">
-        <label>Price</label>
-        <input asp-for="Price" class="form-control" />
-    </div>
-        <hr class="form-divider">
-    <div class="form-group mb-3">
-        <label>Description</label>
-        <textarea asp-for="Description"
-                  class="form-control"
-                  rows="4"></textarea>
-    </div>
-        <hr class="form-divider">
-    <!-- EXISTING IMAGES -->
-    <div class="mb-4">
-        <label class="fw-bold">Existing Images</label>
-            <div id="imagePreviewContainer" class="existing-images">
-                <div id="imagePreviewContainer" class="existing-images">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="PropertyId" />
 
-                    @foreach (var img in Model.ExistingImages)
-{
-    <div class="existing-image-card">
-        <img src="data:image/jpeg;base64,@img.ImageBase64" />
+        <hr class="form-divider">
 
-        <button type="button"
-                class="remove-image-btn"
-                onclick="markExistingImageForRemoval(this)">
-            ×
-        </button>
+        <div class="mb-3">
+            <label>Title</label>
+            <input asp-for="Title" class="form-control" />
+        </div>
 
-        <!-- IMPORTANT: real ImageId -->
-        <input type="hidden"
-               name="RemoveImageIds"
-               value="@img.ImageId"
-               disabled />
-    </div>
-}
+        <div class="mb-3">
+            <label>Location</label>
+            <input asp-for="Location" class="form-control" />
+        </div>
 
+        <div class="mb-3">
+            <label>Price</label>
+            <input asp-for="Price" class="form-control" />
+        </div>
+
+        <div class="mb-3">
+            <label>Description</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <hr class="form-divider">
+
+        <!-- IMAGE GRID (ONE GRID ONLY) -->
+        <label class="fw-bold">Property Images</label>
+
+        <div id="imageGrid" class="image-grid">
+            @foreach (var img in Model.ExistingImages)
+            {
+                <div class="image-card existing">
+                    <img src="data:image/jpeg;base64,@img.ImageBase64" />
+
+                    <button type="button"
+                            class="remove-btn"
+                            onclick="markExistingImageForRemoval(this)">
+                        ×
+                    </button>
+
+                    <input type="hidden"
+                           name="RemoveImageIds"
+                           value="@img.ImageId"
+                           disabled />
                 </div>
-            </div>
-    </div>
+            }
+        </div>
 
-     <input type="file"
-           id="newImagesInput"
-           name="NewImages"
-           multiple
-           accept="image/*"
-           onchange="previewNewImages(this)" />
+        <!-- NEW IMAGES INPUT -->
+        <input type="file"
+               id="newImagesInput"
+               name="NewImages"
+               class="form-control mt-3"
+               multiple
+               accept="image/*" />
 
-    <div id="imagePreviewContainer" class="existing-images"></div>
-        <button class="btn-save">Update Property</button>
+        <button class="btn-save mt-4">Update Property</button>
         <a class="btn-cancel">Cancel</a>
-
-</form>
+    </form>
 </div>
 
+
 <script>
+    const newImagesInput = document.getElementById("newImagesInput");
+    const imageGrid = document.getElementById("imageGrid");
 
-function previewNewImages(input) {
-    if (!input.files || input.files.length === 0) return;
+    let newFiles = [];
 
-    const container = document.getElementById("imagePreviewContainer");
+    newImagesInput.addEventListener("change", function () {
+        Array.from(this.files).forEach(file => {
+            if (!file.type.startsWith("image/")) return;
 
-    // DO NOT clear container if you want additive preview
-    Array.from(input.files).forEach(file => {
-        if (!file.type.startsWith("image/")) return;
+            newFiles.push(file);
+            renderNewImage(file, newFiles.length - 1);
+        });
 
-        const reader = new FileReader();
-        reader.onload = e => {
-            const div = document.createElement("div");
-            div.className = "existing-image-card new-image";
-
-            const img = document.createElement("img");
-            img.src = e.target.result;
-
-            div.appendChild(img);
-            container.appendChild(div);
-        };
-        reader.readAsDataURL(file);
+        syncNewFiles();
     });
 
-    // 🚫 DO NOT reset input.value
-    // 🚫 DO NOT disable input
-}
+    function renderNewImage(file, index) {
+        const reader = new FileReader();
 
+        reader.onload = e => {
+            const card = document.createElement("div");
+            card.className = "image-card new";
 
+            card.innerHTML = `
+                <img src="${e.target.result}">
+                <button type="button" class="remove-btn" onclick="removeNewImage(${index})">×</button>
+            `;
+
+            imageGrid.appendChild(card);
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    function removeNewImage(index) {
+        newFiles.splice(index, 1);
+        rebuildGrid();
+        syncNewFiles();
+    }
+
+    function rebuildGrid() {
+        // Remove only NEW images
+        document.querySelectorAll(".image-card.new").forEach(e => e.remove());
+
+        newFiles.forEach((file, i) => renderNewImage(file, i));
+    }
+
+    function syncNewFiles() {
+        const dt = new DataTransfer();
+        newFiles.forEach(f => dt.items.add(f));
+        newImagesInput.files = dt.files;
+    }
 
     function markExistingImageForRemoval(btn) {
-    const card = btn.closest(".existing-image-card");
-    card.classList.add("marked-for-delete");
+        const card = btn.closest(".image-card");
+        card.classList.toggle("marked-for-delete");
 
-    const hiddenInput = card.querySelector("input[type='hidden']");
-    hiddenInput.disabled = false;
-}
+        const hiddenInput = card.querySelector("input[type='hidden']");
+        hiddenInput.disabled = !hiddenInput.disabled;
+    }
 </script>

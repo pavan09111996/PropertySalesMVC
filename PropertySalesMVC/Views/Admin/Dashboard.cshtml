@@ -4,7 +4,6 @@
     ViewData["Title"] = "All Properties";
     Layout = "_AdminLayout";
 }
-
 @section Styles {
     <link rel="stylesheet" href="~/css/admin-properties.css" />
 }
@@ -84,6 +83,86 @@
     }
 
 </div>
+@if (TempData["PropertyUpdateMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100">
+        <div id="successToast"
+     class="toast toast-admin-success align-items-center border-0"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true">
+
+    <div class="toast-accent"></div>
+
+    <div class="d-flex flex-grow-1">
+        <div class="toast-body">
+            @TempData["PropertyUpdateMessage"]
+        </div>
+
+        <button type="button"
+                class="btn-close btn-close-white me-3 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Close">
+        </button>
+    </div>
+</div>
+
+    </div>
+}
+@if (TempData["PropertyDeletedMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100">
+        <div id="successToast"
+     class="toast toast-admin-success align-items-center border-0"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true">
+
+    <div class="toast-accent"></div>
+
+    <div class="d-flex flex-grow-1">
+        <div class="toast-body">
+            @TempData["PropertyDeletedMessage"]
+        </div>
+
+        <button type="button"
+                class="btn-close btn-close-white me-3 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Close">
+        </button>
+    </div>
+</div>
+
+    </div>
+}
+@if (TempData["PropertyAddedMessage"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index:1100">
+        <div id="successToast"
+     class="toast toast-admin-success align-items-center border-0"
+     role="alert"
+     aria-live="assertive"
+     aria-atomic="true">
+
+    <div class="toast-accent"></div>
+
+    <div class="d-flex flex-grow-1">
+        <div class="toast-body">
+            @TempData["PropertyAddedMessage"]
+        </div>
+
+        <button type="button"
+                class="btn-close btn-close-white me-3 m-auto"
+                data-bs-dismiss="toast"
+                aria-label="Close">
+        </button>
+    </div>
+</div>
+
+    </div>
+}
+
+
 
 @section Scripts {
     <script>
@@ -100,5 +179,14 @@
                 behavior: 'smooth'
             });
         }
+        document.addEventListener("DOMContentLoaded", function () {
+        const toastEl = document.getElementById("successToast");
+        if (toastEl) {
+            const toast = new bootstrap.Toast(toastEl, {
+                delay: 3000 // 3 seconds
+            });
+            toast.show();
+        }
+    });
     </script>
 }

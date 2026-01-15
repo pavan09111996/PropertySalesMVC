@@ -11,10 +11,14 @@ namespace PropertySalesMVC.Controllers
     public class PropertyController : Controller
     {
         private readonly DbHelper _db;
+        private readonly IConfiguration _configuration;
+        private readonly ILogger<PropertyController> _logger;
 
-        public PropertyController(DbHelper db)
+        public PropertyController(DbHelper db, IConfiguration configuration, ILogger<PropertyController> logger)
         {
             _db = db;
+            _configuration = configuration;
+            _logger = logger;
         }
 
         public IActionResult Index()
@@ -44,12 +48,6 @@ namespace PropertySalesMVC.Controllers
 
             return View(list);
         }
-
-
-
-        
-
-
 
 
 
@@ -148,117 +146,125 @@ namespace PropertySalesMVC.Controllers
 
 
         [HttpPost]
-        [AdminAuthorize]
-        [ValidateAntiForgeryToken]
-        public IActionResult EditProperty(EditPropertyViewModel model)
+[AdminAuthorize]
+[ValidateAntiForgeryToken]
+public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
+{
+    model.RemoveImageIds ??= new List<int>();
+    model.NewImages ??= new List<IFormFile>();
+
+    if (!ModelState.IsValid)
+    {
+        model.ExistingImages = GetPropertyImages(model.PropertyId);
+        return View(model);
+    }
+
+    try
+    {
+        await using SqlConnection con = new SqlConnection(
+            _configuration.GetConnectionString("DefaultConnection"));
+
+        await con.OpenAsync();
+
+        await using SqlTransaction tran = con.BeginTransaction();
+
+        try
         {
-            // Ensure lists are never null
-            model.RemoveImageIds ??= new List<int>();
-            model.NewImages ??= new List<IFormFile>();
-
-            if (!ModelState.IsValid)
+            /* ===============================
+               1️⃣ UPDATE PROPERTY DETAILS
+            =============================== */
+            await using (SqlCommand cmd = new SqlCommand(@"
+                UPDATE Properties
+                SET Title = @Title,
+                    Location = @Location,
+                    Price = @Price,
+                    Description = @Description
+                WHERE Id = @Id", con, tran))
             {
-                // Rehydrate images for UI (POST does not send them)
-                model.ExistingImages = GetPropertyImages(model.PropertyId);
-                return View(model);
+                cmd.Parameters.Add("@Id", SqlDbType.Int).Value = model.PropertyId;
+                cmd.Parameters.Add("@Title", SqlDbType.NVarChar, 200).Value = model.Title;
+                cmd.Parameters.Add("@Location", SqlDbType.NVarChar, 200).Value = model.Location;
+                cmd.Parameters.Add("@Price", SqlDbType.Decimal).Value = model.Price;
+                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = model.Description ?? "";
+
+                await cmd.ExecuteNonQueryAsync();
             }
 
-            using SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
-            con.Open();
-
-            using SqlTransaction tran = con.BeginTransaction();
-
-            try
+            /* ===============================
+               2️⃣ DELETE MARKED IMAGES
+            =============================== */
+            if (model.RemoveImageIds.Any())
             {
-                /* =====================================
-                   1️⃣ UPDATE PROPERTY CORE DATA
-                   (Always safe & idempotent)
-                ===================================== */
-                using (SqlCommand cmd = new SqlCommand(@"
-            UPDATE Properties
-            SET Title = @Title,
-                Location = @Location,
-                Price = @Price,
-                Description = @Description
-            WHERE Id = @Id", con, tran))
+                await using SqlCommand deleteCmd = new SqlCommand(@"
+                    DELETE FROM PropertyImages
+                    WHERE ImageId = @ImageId
+                      AND PropertyId = @PropertyId", con, tran);
+
+                deleteCmd.Parameters.Add("@ImageId", SqlDbType.Int);
+                deleteCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
+                         .Value = model.PropertyId;
+
+                foreach (int imageId in model.RemoveImageIds.Distinct())
                 {
-                    cmd.Parameters.AddWithValue("@Id", model.PropertyId);
-                    cmd.Parameters.AddWithValue("@Title", model.Title);
-                    cmd.Parameters.AddWithValue("@Location", model.Location);
-                    cmd.Parameters.AddWithValue("@Price", model.Price);
-                    cmd.Parameters.AddWithValue("@Description", model.Description);
-                    cmd.ExecuteNonQuery();
+                    deleteCmd.Parameters["@ImageId"].Value = imageId;
+                    await deleteCmd.ExecuteNonQueryAsync();
                 }
-
-                /* =====================================
-                   2️⃣ DELETE ONLY IMAGES MARKED ❌
-                   (NO delete if list empty)
-                ===================================== */
-                if (model.RemoveImageIds.Count > 0)
-                {
-                    using SqlCommand deleteCmd = new SqlCommand(@"
-                DELETE FROM PropertyImages
-                WHERE ImageId = @ImageId
-                  AND PropertyId = @PropertyId", con, tran);
-
-                    deleteCmd.Parameters.Add("@ImageId", SqlDbType.Int);
-                    deleteCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                             .Value = model.PropertyId;
-
-                    foreach (int imageId in model.RemoveImageIds.Distinct())
-                    {
-                        deleteCmd.Parameters["@ImageId"].Value = imageId;
-                        deleteCmd.ExecuteNonQuery();
-                    }
-                }
-
-                /* =====================================
-                   3️⃣ INSERT ONLY NEW IMAGES
-                   (NO insert if none selected)
-                ===================================== */
-                if (model.NewImages.Count > 0)
-                {
-                    using SqlCommand insertCmd = new SqlCommand(@"
-                INSERT INTO PropertyImages (PropertyId, ImageBase64)
-                VALUES (@PropertyId, @ImageBase64)", con, tran);
-
-                    insertCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                             .Value = model.PropertyId;
-                    insertCmd.Parameters.Add("@ImageBase64", SqlDbType.NVarChar);
-
-                    foreach (var file in model.NewImages)
-                    {
-                        if (file == null || file.Length == 0)
-                            continue;
-
-                        using MemoryStream ms = new MemoryStream();
-                        file.CopyTo(ms);
-
-                        insertCmd.Parameters["@ImageBase64"].Value =
-                            Convert.ToBase64String(ms.ToArray());
-
-                        insertCmd.ExecuteNonQuery();
-                    }
-                }
-
-                /* =====================================
-                   4️⃣ COMMIT — ONLY IF ALL SUCCEED
-                ===================================== */
-                tran.Commit();
-
-                TempData["SuccessMessage"] = "Property updated successfully.";
-                return RedirectToAction("Admin");
             }
-            catch
+
+            /* ===============================
+               3️⃣ INSERT NEW IMAGES
+            =============================== */
+            if (model.NewImages.Any())
             {
-                tran.Rollback();
+                await using SqlCommand insertCmd = new SqlCommand(@"
+                    INSERT INTO PropertyImages (PropertyId, ImageBase64)
+                    VALUES (@PropertyId, @ImageBase64)", con, tran);
 
-                model.ExistingImages = GetPropertyImages(model.PropertyId);
-                ModelState.AddModelError("", "Failed to update property. Please try again.");
+                insertCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
+                         .Value = model.PropertyId;
 
-                return View(model);
+                insertCmd.Parameters.Add("@ImageBase64", SqlDbType.NVarChar);
+
+                foreach (var file in model.NewImages)
+                {
+                    if (file == null || file.Length == 0)
+                        continue;
+
+                    // 2MB safety limit (recommended)
+                    if (file.Length > 2 * 1024 * 1024)
+                        throw new InvalidOperationException("Image size exceeds 2MB.");
+
+                    await using MemoryStream ms = new MemoryStream();
+                    await file.CopyToAsync(ms);
+
+                    insertCmd.Parameters["@ImageBase64"].Value =
+                        Convert.ToBase64String(ms.ToArray());
+
+                    await insertCmd.ExecuteNonQueryAsync();
+                }
             }
+
+            await tran.CommitAsync();
+
+            TempData["PropertyUpdateMessage"] = "Property updated successfully.";
+            return RedirectToAction("Dashboard", "Admin");
         }
+        catch
+        {
+            await tran.RollbackAsync();
+            throw;
+        }
+    }
+    catch (Exception ex)
+    {
+        _logger.LogError(ex, "Failed to update property {PropertyId}", model.PropertyId);
+
+        model.ExistingImages = GetPropertyImages(model.PropertyId);
+        ModelState.AddModelError("", "Failed to update property. Please try again.");
+
+        return View(model);
+    }
+}
 
         private List<PropertyImageViewModel> GetPropertyImages(int propertyId)
         {

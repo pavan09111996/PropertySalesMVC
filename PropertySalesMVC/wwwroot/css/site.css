@@ -1,4 +1,34 @@
 /* ================================
+   DESIGN SYSTEM – USER SITE
+   Premium Real Estate Brand
+================================ */
+
+/* ---------- CSS VARIABLES ---------- */
+:root {
+    /* Brand */
+    --brand-primary: #1F3A5F;     /* Deep Navy */
+    --brand-accent: #C9A24D;      /* Soft Gold (Luxury Accent) */
+
+    /* Backgrounds */
+    --bg-light: #FFFFFF;
+    --bg-muted: #F8FAFC;
+    --bg-dark: #020617;
+
+    /* Text */
+    --text-dark: #0F172A;
+    --text-muted: #64748B;
+    --text-light: #FFFFFF;
+
+    /* Borders */
+    --border-light: #E5E7EB;
+
+    /* Radius */
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+}
+
+/* ================================
    GLOBAL RESET
 ================================ */
 * {
@@ -8,9 +38,10 @@
 html, body {
     height: 100%;
     margin: 0;
-    font-family: 'Segoe UI', Roboto, sans-serif;
-    background-color: #ffffff;
-    color: #111827;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+    -webkit-font-smoothing: antialiased;
 }
 
 /* ================================
@@ -30,14 +61,14 @@ body {
 ================================ */
 .site-header {
     background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-bottom: 1px solid var(--border-light);
     position: sticky;
     top: 0;
     z-index: 1000;
 }
 
 .navbar {
-    padding: 14px 0;
+    padding: 16px 0;
 }
 
 .navbar-brand .logo {
@@ -46,73 +77,144 @@ body {
 
 /* NAV LINKS */
 .nav-link {
-    color: #374151;
+    color: #334155;
     font-weight: 500;
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-    .nav-link:hover {
-        color: #1E3A8A;
-    }
+.nav-link:hover {
+    color: var(--brand-primary);
+}
 
 /* ADMIN LOGIN BUTTON */
 .btn-admin-login {
-    background: linear-gradient(135deg, #1E3A8A, #2563EB);
+    background: var(--brand-primary);
     color: #ffffff;
-    padding: 10px 18px;
-    border-radius: 12px;
+    padding: 10px 22px;
+    border-radius: 999px;
     font-weight: 600;
     text-decoration: none;
-    box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+    box-shadow: 0 10px 25px rgba(31, 58, 95, 0.35);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-    .btn-admin-login:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 12px 26px rgba(37, 99, 235, 0.45);
-        color: #ffffff;
-    }
+.btn-admin-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 35px rgba(31, 58, 95, 0.45);
+    color: #ffffff;
+}
+
+/* ================================
+   HERO SECTION (IF USED)
+================================ */
+.hero {
+    position: relative;
+    min-height: 75vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-light);
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.55),
+        rgba(0,0,0,0.25)
+    );
+}
+
+.hero-content {
+    position: relative;
+    max-width: 900px;
+    padding: 20px;
+}
+
+.hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.hero p {
+    font-size: 18px;
+    color: #E5E7EB;
+    margin-top: 14px;
+}
+
+/* ================================
+   PRIMARY CTA BUTTON
+================================ */
+.btn-primary,
+.btn-view {
+    border-radius: 999px;
+    font-weight: 600;
+    background: #1E3A8A;
+    color: #fff;
+    box-shadow:
+        0 0 0 1.5px #d4af37,
+        0 12px 25px rgba(31, 58, 95, 0.35);
+}
+
+.btn-primary:hover,
+.btn-view:hover {
+    box-shadow:
+        0 0 0 2px #d4af37,
+        0 18px 40px rgba(31, 58, 95, 0.45);
+}
+
+
+
+
+
 
 /* ================================
    FOOTER
 ================================ */
 .site-footer {
     background: linear-gradient(135deg, #050b1c, #020617);
-    color: #fff;
-    padding: 60px 0 25px;
+    color: #ffffff;
+    padding: 64px 0 28px;
     font-size: 14px;
 }
 
 .footer-title {
     font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 10px;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
 }
 
 .footer-heading {
     font-weight: 600;
     margin-bottom: 10px;
     text-transform: uppercase;
-    font-size: 13px;
+    font-size: 12px;
 }
 
 .footer-text {
     color: #9aa4b2;
-    line-height: 1.6;
+    line-height: 1.7;
 }
 
 .site-footer a {
     color: #e5e7eb;
     text-decoration: none;
+    transition: color 0.2s ease;
 }
 
-    .site-footer a:hover {
-        color: #38bdf8;
-    }
+.site-footer a:hover {
+    color: var(--brand-accent);
+}
 
 .site-footer hr {
     border-color: rgba(255, 255, 255, 0.1);
-    margin: 20px 0;
+    margin: 24px 0;
 }
 
 .footer-bottom {
@@ -127,42 +229,38 @@ body {
    SOCIAL ICON BRAND COLORS
 ================================ */
 .social-icons a {
-    margin-left: 15px;
-    font-size: 22px; /* increased size */
+    margin-left: 16px;
+    font-size: 22px;
     transition: transform 0.25s ease, color 0.25s ease;
 }
 
-    /* Instagram */
-    .social-icons a .fa-instagram {
-        color: #E1306C;
-    }
+/* Instagram */
+.social-icons a .fa-instagram {
+    color: #E1306C;
+}
 
-    .social-icons a:hover .fa-instagram {
-        color: #F77737;
-    }
+.social-icons a:hover .fa-instagram {
+    color: #F77737;
+}
 
-    /* Facebook */
-    .social-icons a .fa-facebook-f {
-        color: #1877F2;
-    }
+/* Facebook */
+.social-icons a .fa-facebook-f {
+    color: #1877F2;
+}
 
-    .social-icons a:hover .fa-facebook-f {
-        color: #145DBF;
-    }
+.social-icons a:hover .fa-facebook-f {
+    color: #145DBF;
+}
 
-    /* Hover animation */
-    .social-icons a:hover {
-        transform: translateY(-2px);
-    }
-
-
-
+.social-icons a:hover {
+    transform: translateY(-2px);
+}
 
 /* ================================
    UTILITIES
 ================================ */
 .text-muted {
-    color: #6B7280 !important;
+    color: var(--text-muted) !important;
 }
 
 /* ================================
@@ -170,7 +268,7 @@ body {
 ================================ */
 @media (max-width: 768px) {
     .navbar-nav {
-        gap: 12px;
+        gap: 14px;
         padding-top: 12px;
     }
 
@@ -178,8 +276,8 @@ body {
         width: 100%;
         text-align: center;
     }
-}
 
-#mainPropertyImage {
-    transition: opacity 0.2s ease;
+    .hero h1 {
+        font-size: 40px;
+    }
 }

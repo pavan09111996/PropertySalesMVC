@@ -19,6 +19,7 @@ builder.Services.AddSession(options =>
 // ADO.NET helper
 builder.Services.AddScoped<DbHelper>();
 
+builder.Services.AddLogging();
 var app = builder.Build();
 
 // =======================

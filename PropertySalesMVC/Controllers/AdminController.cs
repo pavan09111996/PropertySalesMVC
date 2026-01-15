@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PropertySalesMVC.Filters;
 using PropertySalesMVC.Helpers;
-using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Models;
 using System.Data.SqlClient;
 using System.Diagnostics;
@@ -190,7 +189,7 @@ namespace PropertySalesMVC.Controllers
                 }
                 #endregion
             }
-
+            TempData["PropertyAddedMessage"] = "Property added successfully";
             return RedirectToAction("Dashboard");
         }
 
@@ -213,7 +212,7 @@ namespace PropertySalesMVC.Controllers
                 con.Open();
                 cmd.ExecuteNonQuery();
             }
-
+            TempData["PropertyDeletedMessage"] = "Property deleted successfully";
             return RedirectToAction("Dashboard");
         }
 

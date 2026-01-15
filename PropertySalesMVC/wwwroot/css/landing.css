@@ -60,12 +60,23 @@ body {
 }
 
 .section-title {
-    text-align: center;
-    font-size: 32px;
-    font-weight: 700;
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    font-weight: 600;
     margin-bottom: 40px;
-    color: #111827;
+    position: relative;
+    color: #0f172a;
 }
+
+.section-title::after {
+    content: "";
+    width: 60px;
+    height: 2px;
+    background: #d4af37;
+    display: block;
+    margin-top: 10px;
+}
+
 
 /* ===== GRID ===== */
 .property-grid {
@@ -77,16 +88,15 @@ body {
 /* ===== CARD ===== */
 .property-card {
     background: #ffffff;
-    border-radius: 18px;
-    overflow: hidden;
-    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    border-radius: 20px;
     transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-    .property-card:hover {
-        transform: translateY(-6px);
-        box-shadow: 0 20px 45px rgba(15, 23, 42, 0.14);
-    }
+.property-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.18);
+}
+
 .property-image {
     position: relative;
 }
@@ -163,26 +173,30 @@ body {
     }
 }
 /* BADGE */
-.badge-featured {
+.featured-badge {
     position: absolute;
     top: 14px;
     left: 14px;
-    background: #1E3A8A;
-    color: #ffffff;
-    padding: 6px 14px;
+    background: rgba(30, 58, 138, 0.85);
+    backdrop-filter: blur(6px);
+    color: #fff;
     font-size: 12px;
     font-weight: 600;
+    padding: 6px 14px;
     border-radius: 999px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.25);
 }
+
 .property-body {
     padding: 18px;
 }
 .property-title {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    color: #111827;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: #0f172a;
 }
+
 .property-location {
     font-size: 14px;
     color: #6B7280;
@@ -198,13 +212,17 @@ body {
 /* DESCRIPTION */
 .property-desc {
     font-size: 14px;
-    color: #374151;
-    line-height: 1.5;
-    margin-bottom: 16px;
+    line-height: 1.6;
+    color: #64748B;
 }
+
 
 /* FOOTER */
 .property-footer {
     display: flex;
     justify-content: flex-end;
 }
+.gold-accent {
+    color: var(--brand-accent);
+}
+

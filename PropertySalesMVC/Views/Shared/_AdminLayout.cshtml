@@ -3,16 +3,19 @@
 <head>
     <meta charset="utf-8" />
     <title>@ViewData["Title"] - Admin</title>
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/admin.css" />
+    <link rel="stylesheet" href="~/css/admin-properties.css" />
+
+
 
     @RenderSection("Styles", required: false)
 </head>
 <body>
 
     <!-- TOP NAVBAR -->
-    <nav class="navbar navbar-dark bg-dark px-3 admin-navbar">
+<nav class="navbar navbar-dark px-3 admin-navbar">
         <span class="navbar-brand">Admin Dashboard</span>
 
         <a href="/Admin/Logout" class="btn btn-outline-light btn-sm">
