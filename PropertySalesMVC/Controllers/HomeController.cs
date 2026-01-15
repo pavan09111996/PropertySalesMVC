@@ -91,11 +91,6 @@ namespace PropertySalesMVC.Controllers
                 ViewBag.InstagramUrl = adminDetails.InstagramUrl;
                 ViewBag.FacebookUrl = adminDetails.FacebookUrl;
             }
-
-            //Get Session
-            //HttpContext.Session.SetString(SessionKeys.AdminName, "Welcome Ronak");
-
-
             return View(properties.Values.ToList());
         }
 
@@ -110,7 +105,59 @@ namespace PropertySalesMVC.Controllers
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
 
+        [HttpGet]
+        public IActionResult Contact()
+        {
+            ViewBag.Admin = GetActiveAdmin();
+             var adminDetails = GetAdminDetails();
 
+            if (adminDetails != null)
+            {
+                ViewBag.CompanyName = adminDetails.CompanyName;
+                ViewBag.OwnerName = adminDetails.OwnerName;
+                ViewBag.Designation = adminDetails.Designation;
+
+                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+
+                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+
+                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+            }
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Contact(ContactViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return View(model);
+
+            AdminContactInfo admin = GetActiveAdmin();
+
+            if (admin == null)
+            {
+                ModelState.AddModelError("", "Contact service temporarily unavailable.");
+                return View(model);
+            }
+
+            string message =
+                "New Property Enquiry\n" +
+                "----------------------\n" +
+                $"Name: {model.Name}\n" +
+                $"Phone: {model.Phone}\n" +
+                "Customer Message:\n" +
+                $"{model.Message}\n\n" +
+                $"Assigned To: {admin.AdminName}\n" +
+                "Source: Website";
+
+            string whatsappUrl =
+                $"https://wa.me/{admin.WhatsApp}?text={Uri.EscapeDataString(message)}";
+
+            return Redirect(whatsappUrl);
+        }
 
         private AdminDetails GetAdminDetails()
         {
@@ -150,6 +197,31 @@ namespace PropertySalesMVC.Controllers
             return admin;
         }
 
+        private AdminContactInfo GetActiveAdmin()
+        {
+            using SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
+            con.Open();
 
+            using SqlCommand cmd = new SqlCommand(@"
+                SELECT TOP 1 AdminId, AdminName, Phone, WhatsApp, Email
+                FROM AdminMaster
+                WHERE IsActive = 1
+                ORDER BY CreatedOn DESC", con);
+
+            using SqlDataReader dr = cmd.ExecuteReader();
+            if (dr.Read())
+            {
+                return new AdminContactInfo
+                {
+                    AdminId = (int)dr["AdminId"],
+                    AdminName = dr["AdminName"].ToString(),
+                    Phone = dr["Phone"].ToString(),
+                    WhatsApp = dr["WhatsApp"].ToString(),
+                    Email = dr["Email"]?.ToString()
+                };
+            }
+
+            return null;
+        }
     }
 }

@@ -26,6 +26,9 @@
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 16px;
+
+    --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+
 }
 
 /* ================================
@@ -42,6 +45,13 @@ html, body {
     background-color: var(--bg-light);
     color: var(--text-dark);
     -webkit-font-smoothing: antialiased;
+}
+html {
+    scroll-behavior: smooth;
+}
+body {
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
 }
 
 /* ================================
@@ -280,4 +290,237 @@ body {
     .hero h1 {
         font-size: 40px;
     }
+}
+/* ===============================
+   PREMIUM ADMIN LOGIN MODAL
+================================ */
+
+/* HEADER */
+.premium-header {
+    background: linear-gradient(135deg, #020617, #0f172a);
+    padding: 24px 28px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.premium-header h4 {
+    margin: 0;
+    color: #ffffff;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+.premium-header p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: #94a3b8;
+}
+
+/* CLOSE */
+.premium-close {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    color: #94a3b8;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.premium-close:hover {
+    color: #ffffff;
+}
+
+/* BODY */
+.premium-body {
+    padding: 28px;
+    background: #f8fafc;
+}
+
+.premium-field {
+    margin-bottom: 18px;
+}
+
+.premium-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.premium-input {
+    width: 100%;
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    font-size: 14px;
+    background: #ffffff;
+}
+
+.premium-input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
+}
+
+/* ERROR */
+.premium-error {
+    font-size: 13px;
+    color: #dc2626;
+    margin-top: 6px;
+}
+
+/* FOOTER */
+.premium-footer {
+    padding: 20px 28px;
+    background: #ffffff;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* BUTTONS */
+.btn-login {
+    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    color: #ffffff;
+    padding: 12px 28px;
+    border-radius: 14px;
+    font-weight: 600;
+    border: none;
+    box-shadow: 0 14px 40px rgba(37,99,235,0.55);
+    cursor: pointer;
+}
+
+.btn-login:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 22px 50px rgba(37,99,235,0.7);
+}
+
+.btn-cancel {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 12px 22px;
+    border-radius: 14px;
+    border: none;
+    cursor: pointer;
+}
+
+/* ===============================
+   PREMIUM ADMIN MODAL (SAFARI SAFE)
+================================ */
+
+.premium-admin-modal .modal-dialog {
+    max-width: 460px;
+    margin: auto;
+}
+
+.premium-admin-modal .modal-content {
+    border-radius: 18px;
+    border: none;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.35);
+    overflow: hidden; /* 🔑 SAFARI FIX */
+    background: #ffffff;
+}
+
+/* HEADER */
+.premium-admin-modal .modal-header {
+    padding: 28px 28px 18px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.premium-admin-modal .modal-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+/* BODY */
+.premium-admin-modal .modal-body {
+    padding: 24px 28px;
+}
+
+/* INPUTS */
+.premium-admin-modal .form-control {
+    height: 46px;
+    border-radius: 10px;
+    border: 1px solid #d1d5db;
+    font-size: 15px;
+}
+
+.premium-admin-modal .form-control:focus {
+    border-color: #2563eb;
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* ERROR */
+#loginError {
+    font-size: 14px;
+    color: #dc2626;
+}
+
+/* FOOTER */
+.premium-admin-modal .modal-footer {
+    padding: 20px 28px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+/* BACKDROP FIX (IMPORTANT FOR SAFARI) */
+.premium-admin-modal ~ .modal-backdrop.show {
+    opacity: 0.65;
+}
+
+/* Premium modal entrance */
+.modal.fade .modal-dialog {
+    transform: translateY(30px) scale(0.98);
+    transition: transform 0.45s var(--ease-premium), opacity 0.3s ease;
+}
+
+.modal.fade.show .modal-dialog {
+    transform: translateY(0) scale(1);
+}
+
+.modal-backdrop {
+    transition: opacity 0.4s var(--ease-premium);
+}
+button,
+.btn,
+a.btn {
+    transition:
+        transform 0.25s var(--ease-premium),
+        box-shadow 0.25s var(--ease-premium),
+        background-color 0.25s ease,
+        color 0.25s ease;
+}
+
+button:active,
+.btn:active {
+    transform: scale(0.96);
+}
+.property-card,
+.admin-card,
+.card {
+    transition: transform 0.35s var(--ease-premium),
+                box-shadow 0.35s var(--ease-premium);
+}
+
+.property-card:hover,
+.admin-card:hover {
+    transform: translateY(-6px);
+}
+img {
+    transition: transform 0.5s var(--ease-premium);
+}
+
+.property-card:hover img {
+    transform: scale(1.04);
+}
+:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
+    border-radius: 6px;
 }

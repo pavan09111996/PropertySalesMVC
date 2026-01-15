@@ -93,7 +93,23 @@ namespace PropertySalesMVC.Controllers
                     }
                 }
             }
+            var adminDetails = GetAdminDetails();
 
+            if (adminDetails != null)
+            {
+                ViewBag.CompanyName = adminDetails.CompanyName;
+                ViewBag.OwnerName = adminDetails.OwnerName;
+                ViewBag.Designation = adminDetails.Designation;
+
+                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+
+                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+
+                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+            }
             return View(model);
         }
 
@@ -144,7 +160,43 @@ namespace PropertySalesMVC.Controllers
             return View(model);
         }
 
+ private AdminDetails GetAdminDetails()
+        {
+            AdminDetails admin = null;
 
+            using (SqlConnection con = new SqlConnection(
+                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+            {
+                con.Open();
+
+                string query = "SELECT TOP 1 * FROM AdminDetails WHERE IsActive = 1";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.Read())
+                    {
+                        admin = new AdminDetails
+                        {
+                            OwnerName = reader["OwnerName"].ToString(),
+                            CompanyName = reader["CompanyName"].ToString(),
+                            Designation = reader["Designation"].ToString(),
+
+                            HeadOfficeTitle = reader["HeadOfficeTitle"].ToString(),
+                            HeadOfficeAddress = reader["HeadOfficeAddress"].ToString(),
+
+                            BranchOfficeTitle = reader["BranchOfficeTitle"].ToString(),
+                            BranchOfficeAddress = reader["BranchOfficeAddress"].ToString(),
+
+                            InstagramUrl = reader["InstagramUrl"].ToString(),
+                            FacebookUrl = reader["FacebookUrl"].ToString()
+                        };
+                    }
+                }
+            }
+
+            return admin;
+        }
         [HttpPost]
 [AdminAuthorize]
 [ValidateAntiForgeryToken]

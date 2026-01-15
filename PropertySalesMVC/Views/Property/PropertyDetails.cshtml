@@ -1,5 +1,6 @@
 ﻿@model PropertyViewModel
 <link rel="stylesheet" href="~/css/property-details.css" />
+
 @{
     ViewData["Title"] = Model.Title;
 }
@@ -25,17 +26,19 @@
             }
         </div>
 
-        <!-- THUMBNAILS -->
+        <!-- THUMBNAILS (ONLY IF MULTIPLE) -->
         @if (Model.ImagesBase64 != null && Model.ImagesBase64.Count > 1)
         {
-            <div class="thumbnail-row">
-                @foreach (var img in Model.ImagesBase64)
-                {
-                    <img src="data:image/jpeg;base64,@img"
-                         class="thumbnail"
-                         onclick="changeMainImage(this)"
-                         alt="Property Thumbnail" />
-                }
+            <div class="thumbnail-wrapper">
+                <div class="thumbnail-row">
+                    @foreach (var img in Model.ImagesBase64)
+                    {
+                        <img src="data:image/jpeg;base64,@img"
+                             class="thumbnail"
+                             onclick="changeMainImage(this)"
+                             alt="Property Thumbnail" />
+                    }
+                </div>
             </div>
         }
 
@@ -54,25 +57,26 @@
             ₹ @Model.Price.ToString("N0")
         </div>
 
-        <!-- PROPERTY SPECS -->
         <div class="specs">
             <span>🏠 2 BHK</span>
             <span>📐 1200 sq.ft</span>
             <span>🏗 Ready to Move</span>
         </div>
 
-        <!-- DESCRIPTION -->
         <p class="description">
             @Model.Description
         </p>
 
-        <!-- ACTION BUTTONS -->
         <div class="actions">
-            <a href="tel:+919867313626" class="cta-btn btn-call" target="_blank">
+            <a href="tel:+919867313626"
+               class="cta-btn btn-call"
+               target="_blank">
                 Call Now
             </a>
 
-            <a href="https://wa.me/919867313626" class="cta-btn btn-whatsapp" target="_blank">
+            <a href="https://wa.me/919867313626"
+               class="cta-btn btn-whatsapp"
+               target="_blank">
                 WhatsApp
             </a>
         </div>
@@ -85,15 +89,21 @@
      IMAGE TOGGLE SCRIPT
 ================================ -->
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const firstThumb = document.querySelector(".thumbnail");
+        if (firstThumb) firstThumb.classList.add("active-thumb");
+    });
+
     function changeMainImage(thumbnail) {
         const mainImage = document.getElementById("mainPropertyImage");
+        if (!mainImage) return;
+
         mainImage.src = thumbnail.src;
 
-        document.querySelectorAll(".thumbnail").forEach(img => {
-            img.classList.remove("active-thumb");
-        });
+        document.querySelectorAll(".thumbnail").forEach(img =>
+            img.classList.remove("active-thumb")
+        );
 
         thumbnail.classList.add("active-thumb");
     }
 </script>
-

@@ -8,8 +8,25 @@
     <link rel="stylesheet" href="~/css/landing.css" />
 }
 
-<!-- HERO SECTION -->
-<section class="hero">
+<!-- HERO SECTION WITH VIDEO -->
+<section class="hero hero-video">
+
+    <!-- Background Video -->
+    <video class="hero-bg-video"
+           autoplay
+           muted
+           loop
+           playsinline
+           preload="metadata"
+           poster="/images/hero-fallback.jpg">
+        <source src="/videos/realestate-timelapse.mp4" type="video/mp4" />
+        <!-- Fallback text -->
+    </video>
+
+    <!-- Dark Overlay -->
+    <div class="hero-overlay"></div>
+
+    <!-- Content -->
     <div class="hero-content">
         <h1>Find Your <span class="gold-accent">Dream</span> Property</h1>
         <p>Buy premium homes, apartments, and commercial spaces across India</p>
@@ -18,7 +35,9 @@
             Browse Properties
         </a>
     </div>
+
 </section>
+
 
 <!-- PROPERTIES -->
 <section id="properties" class="properties-section">
@@ -31,35 +50,61 @@
         {
             <div class="property-card">
 
-                <!-- IMAGE -->
-                <div class="property-image">
+                <!-- IMAGE SECTION -->
+                <div class="property-image"
+                data-image-count="@(property.ImagesBase64?.Count ?? 0)">
 
-                    @if (property.ImagesBase64?.Any() == true)
-                    {
-                        <img src="data:image/jpeg;base64,@property.ImagesBase64.First()" />
-                    }
-                    else
-                    {
-                        <img src="~/images/no-image.png" />
-                    }
-            </div>
 
-            <!-- BODY -->
-            <div class="property-body">
+                    <!-- FEATURED BADGE (optional now, future ready) -->
+                    <span class="featured-badge">Featured</span>
 
-                <h3 class="property-title">@property.Title</h3>
+                    <!-- LEFT ARROW -->
+                    <button class="nav-arrow left"
+                            type="button"
+                            onclick="scrollImages(this, -1)">
+                        ❮
+                    </button>
 
-                <p class="property-location">📍 @property.Location</p>
+                    <!-- IMAGE STRIP -->
+                    <div class="image-strip">
+                        @if (property.ImagesBase64?.Any() == true)
+                        {
+                            foreach (var img in property.ImagesBase64)
+                            {
+                                <img src="data:image/jpeg;base64,@img" alt="Property Image" />
+                            }
+                        }
+                        else
+                        {
+                            <img src="~/images/no-image.png" alt="No Image" />
+                        }
+                    </div>
 
-                <div class="property-price">
-                    ₹ @property.Price.ToString("N0")
+                    <!-- RIGHT ARROW -->
+                    <button class="nav-arrow right"
+                            type="button"
+                            onclick="scrollImages(this, 1)">
+                        ❯
+                    </button>
+
                 </div>
 
-                <p class="property-desc">
-                    @(property.Description.Length > 90
-                                        ? property.Description.Substring(0, 90) + "..."
-                                        : property.Description)
-                </p>
+                <!-- BODY -->
+                <div class="property-body">
+
+                    <h3 class="property-title">@property.Title</h3>
+
+                    <p class="property-location">📍 @property.Location</p>
+
+                    <div class="property-price">
+                        ₹ @property.Price.ToString("N0")
+                    </div>
+
+                    <p class="property-desc">
+                        @(property.Description.Length > 90
+                            ? property.Description.Substring(0, 90) + "..."
+                            : property.Description)
+                    </p>
 
                     <div class="property-footer">
                         <a href="@Url.Action("PropertyDetails", "Property", new { id = property.PropertyId })"
@@ -69,9 +114,38 @@
                     </div>
 
                 </div>
+
             </div>
-                }
+        }
 
     </div>
 </section>
 
+@section Scripts {
+    <script>
+        function scrollImages(button, direction) {
+            const wrapper = button.closest('.property-image');
+            const strip = wrapper.querySelector('.image-strip');
+            const img = strip.querySelector('img');
+
+            if (!img) return;
+
+            const scrollAmount = img.clientWidth;
+
+            strip.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".property-image").forEach(container => {
+            const imageCount = parseInt(container.dataset.imageCount || "0");
+
+            if (imageCount <= 1) {
+                const arrows = container.querySelectorAll(".nav-arrow");
+                arrows.forEach(a => a.style.display = "none");
+            }
+        });
+    });
+    </script>
+}
