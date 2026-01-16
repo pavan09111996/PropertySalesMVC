@@ -1,99 +1,142 @@
-﻿@model PropertyViewModel
-<link rel="stylesheet" href="~/css/property-details.css" />
+﻿@model EditPropertyViewModel
 @{
-    ViewData["Title"] = Model.Title;
+    ViewData["Title"] = "Edit Property";
 }
 
-<section class="property-details-wrapper">
+<link href="~/css/property-update.css" rel="stylesheet" />
 
-    <!-- ===============================
-         LEFT : IMAGE GALLERY
-    ================================ -->
-    <div class="property-gallery">
+<div class="edit-property-container">
 
-        <!-- MAIN IMAGE -->
-        <div class="main-image">
-            @if (Model.ImagesBase64 != null && Model.ImagesBase64.Any())
-            {
-                <img id="mainPropertyImage"
-                     src="data:image/jpeg;base64,@Model.ImagesBase64.First()"
-                     alt="Property Image" />
-            }
-            else
-            {
-                <img src="~/images/no-image.png" alt="No Image" />
-            }
+    <h2>Edit Property</h2>
+    <p class="edit-subtitle">Update property details and manage images</p>
+
+    <form asp-action="EditProperty"
+          asp-controller="Property"
+          method="post"
+          enctype="multipart/form-data">
+
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="PropertyId" />
+
+        <div class="form-group">
+            <label>Title</label>
+            <input asp-for="Title" class="form-control" />
         </div>
 
-        <!-- THUMBNAILS -->
-        @if (Model.ImagesBase64 != null && Model.ImagesBase64.Count > 1)
-        {
-            <div class="thumbnail-row">
-                @foreach (var img in Model.ImagesBase64)
-                {
-                    <img src="data:image/jpeg;base64,@img"
-                         class="thumbnail"
-                         onclick="changeMainImage(this)"
-                         alt="Property Thumbnail" />
-                }
-            </div>
+        <div class="form-group">
+            <label>Location</label>
+            <input asp-for="Location" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Price</label>
+            <input asp-for="Price" class="form-control" />
+        </div>
+
+        <div class="form-group">
+            <label>Description</label>
+            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+        </div>
+
+        <!-- IMAGES -->
+        <label class="fw-bold">Images</label>
+
+        <div class="image-grid" id="imageGrid">
+
+            <!-- EXISTING IMAGES -->
+            @foreach (var img in Model.ExistingImages)
+            {
+                <div class="image-tile">
+                    <img src="data:image/jpeg;base64,@img.ImageBase64" />
+
+                    <button type="button"
+                            class="remove-image"
+                            onclick="markForDelete(this)">
+                        ×
+                    </button>
+
+                    <input type="hidden"
+                           name="RemoveImageIds"
+                           value="@img.ImageId"
+                           disabled />
+                </div>
+            }
+
+            <!-- ADD IMAGE TILE -->
+            <label class="image-tile add-tile">
+                + Add Image
+                <input type="file"
+                       id="newImagesInput"
+                       name="NewImages"
+                       multiple
+                       accept="image/*"
+                       hidden
+                       onchange="previewNewImages(this)" />
+            </label>
+
+        </div>
+
+        <!-- CLEAR NEW IMAGES -->
+        <button type="button"
+                id="clearImagesBtn"
+                class="btn-clear-images"
+                onclick="clearNewImages()"
+                style="display:none;">
+            Clear Selected Images
+        </button>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-save">Update Property</button>
+            <a href="/Property/Index" class="btn-cancel">Cancel</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    function previewNewImages(input) {
+        const grid = document.getElementById("imageGrid");
+        const clearBtn = document.getElementById("clearImagesBtn");
+
+        // Remove previous NEW previews
+        grid.querySelectorAll(".new-image").forEach(e => e.remove());
+
+        if (!input.files || input.files.length === 0) {
+            clearBtn.style.display = "none";
+            return;
         }
 
-    </div>
+        Array.from(input.files).forEach(file => {
+            if (!file.type.startsWith("image/")) return;
 
-    <!-- ===============================
-         RIGHT : PROPERTY INFO CARD
-    ================================ -->
-    <div class="property-info-card">
+            const reader = new FileReader();
+            reader.onload = e => {
+                const tile = document.createElement("div");
+                tile.className = "image-tile new-image";
 
-        <h1>@Model.Title</h1>
+                const img = document.createElement("img");
+                img.src = e.target.result;
 
-        <p class="location">📍 @Model.Location</p>
+                tile.appendChild(img);
 
-        <div class="price">
-            ₹ @Model.Price.ToString("N0")
-        </div>
-
-        <!-- PROPERTY SPECS -->
-        <div class="specs">
-            <span>🏠 2 BHK</span>
-            <span>📐 1200 sq.ft</span>
-            <span>🏗 Ready to Move</span>
-        </div>
-
-        <!-- DESCRIPTION -->
-        <p class="description">
-            @Model.Description
-        </p>
-
-        <!-- ACTION BUTTONS -->
-        <div class="actions">
-            <a href="tel:+919867313626" class="cta-btn btn-call" target="_blank">
-                Call Now
-            </a>
-
-            <a href="https://wa.me/919867313626" class="cta-btn btn-whatsapp" target="_blank">
-                WhatsApp
-            </a>
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ===============================
-     IMAGE TOGGLE SCRIPT
-================================ -->
-<script>
-    function changeMainImage(thumbnail) {
-        const mainImage = document.getElementById("mainPropertyImage");
-        mainImage.src = thumbnail.src;
-
-        document.querySelectorAll(".thumbnail").forEach(img => {
-            img.classList.remove("active-thumb");
+                // Insert BEFORE add-tile
+                grid.insertBefore(tile, grid.lastElementChild);
+            };
+            reader.readAsDataURL(file);
         });
 
-        thumbnail.classList.add("active-thumb");
+        clearBtn.style.display = "inline-block";
+    }
+
+    function clearNewImages() {
+        document.getElementById("newImagesInput").value = "";
+        document.querySelectorAll(".new-image").forEach(e => e.remove());
+        document.getElementById("clearImagesBtn").style.display = "none";
+    }
+
+    function markForDelete(btn) {
+        const tile = btn.closest(".image-tile");
+        tile.classList.add("marked-for-delete");
+        tile.querySelector("input[type='hidden']").disabled = false;
     }
 </script>
-

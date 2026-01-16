@@ -136,7 +136,7 @@ namespace PropertySalesMVC.Controllers
             //HttpContext.Session.SetString(SessionKeys.AdminName, "Welcome Ronak");
 
 
-            return View(properties.Values.ToList());
+            //return View(properties.Values.ToList());
 
 
             var model = new PagedResult<PropertyViewModel>

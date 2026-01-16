@@ -1,232 +1,125 @@
-﻿/* ================================
-   PROPERTY DETAILS PAGE
-================================ */
+﻿/* ===============================
+   EDIT PROPERTY – IMAGE SYSTEM
+=============================== */
 
-/* PAGE WRAPPER */
-.property-details-wrapper {
-    max-width: 1200px;
-    margin: 60px auto;
-    padding: 0 20px;
+.edit-property-container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 32px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.08);
+}
+
+.edit-subtitle {
+    color: #64748b;
+    margin-bottom: 24px;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-control {
+    border-radius: 10px;
+    padding: 12px;
+}
+
+/* IMAGE GRID */
+.image-grid {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
-    gap: 40px;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+    margin-top: 12px;
 }
 
-/* ================================
-   IMAGE GALLERY
-================================ */
-
-.property-gallery {
-    width: 100%;
+/* IMAGE TILE */
+.image-tile {
+    position: relative;
+    height: 120px;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #f1f5f9;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
-    /* MAIN IMAGE */
-    .property-gallery .main-image img {
+    .image-tile img {
         width: 100%;
-        height: 380px;
+        height: 100%;
         object-fit: cover;
-        border-radius: 18px;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
     }
 
-/* THUMBNAILS */
-.thumbnail-row {
-    display: flex;
-    gap: 12px;
-    margin-top: 16px;
+/* REMOVE BUTTON */
+.remove-image {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: rgba(15,23,42,0.85);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: 0.2s;
 }
 
-    .thumbnail-row img {
-        width: 90px;
-        height: 70px;
-        object-fit: cover;
-        border-radius: 10px;
-        cursor: pointer;
-        opacity: 0.9;
-        transition: transform 0.2s ease, opacity 0.2s ease;
-    }
-
-        .thumbnail-row img:hover {
-            transform: scale(1.05);
-            opacity: 1;
-        }
-
-.thumbnail.active-thumb {
-    outline: 3px solid #2563EB;
+.image-tile:hover .remove-image {
     opacity: 1;
 }
 
-/* ================================
-   PROPERTY INFO CARD
-================================ */
-
-.property-info-card {
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 20px;
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
-}
-
-    /* TITLE */
-    .property-info-card h1 {
-        font-size: 30px;
-        font-weight: 700;
-        color: #111827;
-        margin-bottom: 6px;
-    }
-
-    /* LOCATION */
-    .property-info-card .location {
-        font-size: 15px;
-        color: #6B7280;
-        margin-bottom: 18px;
-    }
-
-    /* PRICE */
-    .property-info-card .price {
-        font-size: 28px;
-        font-weight: 800;
-        color: #15803D;
-        margin-bottom: 18px;
-    }
-
-    /* SPECS */
-    .property-info-card .specs {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        font-size: 14px;
-        color: #374151;
-        margin-bottom: 18px;
-    }
-
-        .property-info-card .specs span {
-            background: #F3F4F6;
-            padding: 6px 12px;
-            border-radius: 999px;
-            font-weight: 500;
-        }
-
-    /* DESCRIPTION */
-    .property-info-card .description {
-        font-size: 15px;
-        line-height: 1.7;
-        color: #374151;
-        margin-bottom: 28px;
-    }
-
-    /* ================================
-   ACTION BUTTONS
-================================ */
-
-    .property-info-card .actions {
-        display: flex;
-        gap: 16px;
-    }
-
-/* CALL BUTTON */
-.btn-call {
-    background: linear-gradient(135deg, #1E3A8A, #2563EB);
-    color: #ffffff;
-    padding: 14px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-    .btn-call:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 32px rgba(37, 99, 235, 0.45);
-    }
-
-/* WHATSAPP BUTTON */
-.btn-whatsapp {
-    background: linear-gradient(135deg, #16A34A, #22C55E);
-    color: #ffffff;
-    padding: 14px 24px;
-    border-radius: 12px;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 10px 24px rgba(34, 197, 94, 0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-    .btn-whatsapp:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 14px 32px rgba(34, 197, 94, 0.45);
-    }
-
-/* ================================
-   RESPONSIVE (MOBILE)
-================================ */
-
-@media (max-width: 900px) {
-    .property-details-wrapper {
-        grid-template-columns: 1fr;
-    }
-
-    .property-gallery .main-image img {
-        height: 280px;
-    }
-
-    .property-info-card {
-        margin-top: 20px;
-    }
-
-        .property-info-card h1 {
-            font-size: 26px;
-        }
-
-        .property-info-card .price {
-            font-size: 24px;
-        }
-}
-/* Common CTA button base */
-.cta-btn {
-    display: inline-flex;
+/* ADD TILE */
+.add-tile {
+    border: 2px dashed #c7d2fe;
+    background: #f8fafc;
+    cursor: pointer;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 12px 26px;
-    font-size: 15px;
     font-weight: 600;
-    border-radius: 12px;
+    color: #1e3a8a;
+}
+
+    .add-tile:hover {
+        background: #eef2ff;
+    }
+
+/* MARK DELETE */
+.marked-for-delete {
+    opacity: 0.4;
+    filter: grayscale(100%);
+}
+
+/* ACTIONS */
+.form-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.btn-save {
+    background: linear-gradient(135deg,#1d4ed8,#2563eb);
+    color: white;
+    padding: 12px 28px;
+    border-radius: 10px;
     border: none;
-    cursor: pointer;
-    transition: background 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-/* CALL NOW (Primary Blue) */
-.btn-call {
-    background: linear-gradient(135deg, #1f4fd8, #163db3);
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(31, 79, 216, 0.25);
+.btn-cancel {
+    padding: 12px 22px;
+    background: #e5e7eb;
+    border-radius: 10px;
+    text-decoration: none;
+    color: #111827;
 }
 
-    .btn-call:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 16px 34px rgba(31, 79, 216, 0.35);
-        background: linear-gradient(135deg, #163db3, #0f2f8a);
-    }
-
-/* WHATSAPP (Premium Green) */
-.btn-whatsapp {
-    background: linear-gradient(135deg, #25d366, #1ebd5a);
-    color: #fff;
-    box-shadow: 0 10px 22px rgba(37, 211, 102, 0.28);
+.btn-clear-images {
+    margin-top: 10px;
+    background: #fee2e2;
+    color: #991b1b;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 600;
 }
-
-    .btn-whatsapp:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 18px 36px rgba(37, 211, 102, 0.38);
-        background: linear-gradient(135deg, #1ebd5a, #189d4a);
-    }
-
-/* Optional: subtle press feedback */
-.cta-btn:active {
-    transform: translateY(-1px);
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-}
-
