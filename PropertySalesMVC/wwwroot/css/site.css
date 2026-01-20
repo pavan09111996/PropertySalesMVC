@@ -72,9 +72,9 @@ body {
 .site-header {
     background: #ffffff;
     border-bottom: 1px solid var(--border-light);
-    position: sticky;
     top: 0;
-    z-index: 1000;
+    position: relative;
+    z-index: 1100;
 }
 
 .navbar {
@@ -523,4 +523,11 @@ img {
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
     border-radius: 6px;
+}
+
+.navbar-toggler {
+    border-color: rgba(255,255,255,0.5);
+}
+.navbar-toggler-icon {
+    filter: invert(1);
 }

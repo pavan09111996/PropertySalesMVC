@@ -49,7 +49,6 @@
     @RenderSection("Styles", required: false)
 
     <script src="~/js/adminlogin.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 
 </head>
 <body>
@@ -58,7 +57,8 @@
          HEADER / NAVBAR
     ================================ -->
     <header class="site-header">
-        <nav class="navbar navbar-expand-lg container">
+        <nav class="navbar navbar-expand-lg navbar-light">
+
             <a class="navbar-brand d-flex align-items-center" href="/">
                 <img src="~/images/ronak-logo.png"
                      alt="Ronak Estate"
@@ -248,6 +248,37 @@
     </div>
 </div>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+
+            const navCollapse = document.getElementById("mainNav");
+
+            if (!navCollapse) return;
+
+            const bsCollapse = new bootstrap.Collapse(navCollapse, {
+                toggle: false
+            });
+
+            // Close menu on nav-link click
+            document.querySelectorAll(".navbar-nav .nav-link").forEach(link => {
+                link.addEventListener("click", () => {
+                    if (window.innerWidth < 992) {
+                        bsCollapse.hide();
+                    }
+                });
+            });
+
+            // Close menu when Login button clicked
+            document.querySelectorAll("[data-bs-target='#adminLoginModal']").forEach(btn => {
+                btn.addEventListener("click", () => {
+                    if (window.innerWidth < 992) {
+                        bsCollapse.hide();
+                    }
+                });
+            });
+
+        });
+    </script>
 
 
 </body>
