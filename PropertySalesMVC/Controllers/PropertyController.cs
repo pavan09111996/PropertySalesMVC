@@ -61,9 +61,13 @@ namespace PropertySalesMVC.Controllers
                 con.Open();
 
                 // PROPERTY
-                string propertyQuery = @"SELECT Id, Title, Location, Price, Description
-                                 FROM Properties
-                                 WHERE Id = @Id AND IsActive = 1";
+                string propertyQuery = @"
+                    SELECT p.Id, p.Title, isnull(lm.Location,'') as Location, p.Price, p.Description
+                    FROM Properties p
+                    LEFT JOIN LocationMaster lm
+                    on p.Location = lm.id
+                    WHERE p.Id = @Id AND p.IsActive = 1
+                     ";
 
                 SqlCommand cmd = new SqlCommand(propertyQuery, con);
                 cmd.Parameters.AddWithValue("@Id", id);

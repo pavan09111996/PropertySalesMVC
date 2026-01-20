@@ -18,7 +18,15 @@
     <!-- Location -->
     <div class="mb-3">
         <label class="form-label">Location</label>
-        <input type="text" class="form-control" name="Location" required />
+
+        <select class="form-select" name="Location" required>
+            <option value="">-- Select Location --</option>
+
+            @foreach (var loc in ViewBag.Locations)
+            {
+                <option value="@loc.Id">@loc.LocationName</option>
+            }
+        </select>
     </div>
 
     <!-- Price -->

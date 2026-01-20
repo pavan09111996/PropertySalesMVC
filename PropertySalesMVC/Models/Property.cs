@@ -80,4 +80,10 @@ namespace PropertySalesMVC.Models
         public int AdminId { get; set; }
     }
 
+    public class LocationMaster
+    {
+        public int Id { get; set; }
+        public string LocationName { get; set; }
+    }
+
 }

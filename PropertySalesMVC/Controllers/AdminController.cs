@@ -6,6 +6,7 @@ using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Models;
 using System.Data.SqlClient;
 using System.Diagnostics;
+using System.IO.Pipelines;
 
 namespace PropertySalesMVC.Controllers
 {
@@ -69,16 +70,18 @@ namespace PropertySalesMVC.Controllers
             using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
             {
                 string query = @"
-            SELECT 
+                SELECT 
                 p.Id,
                 p.Title,
-                p.Location,
+                isnull(lm.Location,'') as Location,
                 p.Price,
                 p.Description,
-                i.ImageBase64
+                im.ImageBase64
                 FROM Properties p
-                LEFT JOIN PropertyImages i
-                ON p.Id = i.PropertyId
+                LEFT JOIN PropertyImages im
+                ON p.Id = im.PropertyId
+                LEFT JOIN LocationMaster Lm
+                on P.Location = lm.Id
                 where p.IsActive = 1
                  ";
 
@@ -123,6 +126,32 @@ namespace PropertySalesMVC.Controllers
         [AdminAuthorize]
         public IActionResult AddProperty()
         {
+            List<LocationMaster> locationMasterList = new List<LocationMaster>();
+
+            using (SqlConnection con = new SqlConnection(
+                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+            {
+                string query = @"SELECT Id, Location FROM LocationMaster WHERE IsActive = 1";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    con.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            locationMasterList.Add(new LocationMaster
+                            {
+                                Id = Convert.ToInt32(reader["Id"]),
+                                LocationName = reader["Location"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            ViewBag.Locations = locationMasterList;
             return View();
         }
 
@@ -130,7 +159,7 @@ namespace PropertySalesMVC.Controllers
         [AdminAuthorize]
         public IActionResult AddProperty(
             string Title,
-            string Location,
+            int Location,
             decimal Price,
             string Description,
             List<IFormFile> Images)

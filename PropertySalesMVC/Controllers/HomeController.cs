@@ -23,16 +23,19 @@ namespace PropertySalesMVC.Controllers
             using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
             {
                 string query = @"
-            SELECT 
+            
+                SELECT 
                 p.Id,
                 p.Title,
-                p.Location,
+                isnull(lm.Location,'') as Location,
                 p.Price,
                 p.Description,
                 i.ImageBase64
                 FROM Properties p
                 LEFT JOIN PropertyImages i
                 ON p.Id = i.PropertyId
+                LEFT JOIN LocationMaster lm
+                on p.Location = lm.id
                 where p.IsActive = 1
                  ";
 
