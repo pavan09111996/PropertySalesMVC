@@ -1,0 +1,100 @@
+﻿@model List<PropertySalesMVC.Models.PropertyViewModel>
+
+@{
+    ViewData["Title"] = "Buy Properties - Ronak Estate";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/landing.css" />
+}
+
+<!-- HERO SECTION -->
+<section class="hero hero-video">
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <h1>
+            Explore <span class="gold-accent">Properties for Buy</span>
+        </h1>
+        <p>Handpicked premium properties available for purchase</p>
+        <a href="#properties" class="btn-primary">Browse Buy Properties</a>
+    </div>
+</section>
+
+<!-- PROPERTIES -->
+<section id="properties" class="properties-section">
+    <h2 class="section-title">Buy Properties</h2>
+
+    <div class="property-grid">
+        @foreach (var property in Model)
+        {
+            <div class="property-card">
+
+                <!-- IMAGE SECTION -->
+                <div class="property-image" data-image-count="@(property.ImagesBase64?.Count ?? 0)">
+                    <span class="featured-badge">Buy</span>
+
+                    <!-- LEFT ARROW -->
+                    <button class="nav-arrow left" type="button" onclick="scrollImages(this, -1)">❮</button>
+
+                    <!-- IMAGE STRIP -->
+                    <div class="image-strip">
+                        @if (property.ImagesBase64?.Any() == true)
+                        {
+                            foreach (var img in property.ImagesBase64)
+                            {
+                                <img src="data:image/jpeg;base64,@img" alt="Property Image" />
+                            }
+                        }
+                        else
+                        {
+                            <img src="~/images/no-image.png" alt="No Image" />
+                        }
+                </div>
+
+                <!-- RIGHT ARROW -->
+                <button class="nav-arrow right" type="button" onclick="scrollImages(this, 1)">❯</button>
+            </div>
+
+            <!-- PROPERTY BODY -->
+            <div class="property-body">
+                <h3 class="property-title">@property.Title</h3>
+                <p class="property-location">📍 @property.Location</p>
+                <div class="property-price">₹ @property.Price.ToString("N0")</div>
+                <p class="property-desc">
+                    @(property.Description.Length > 90
+                                        ? property.Description.Substring(0, 90) + "..."
+                                        : property.Description)
+                </p>
+                <div class="property-footer">
+                    <a href="@Url.Action("PropertyDetails", "Property", new { id = property.PropertyId })"
+                       class="btn-primary">View Details</a>
+                </div>
+            </div>
+        </div>
+                }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function scrollImages(button, direction) {
+            const wrapper = button.closest('.property-image');
+            const strip = wrapper.querySelector('.image-strip');
+            const img = strip.querySelector('img');
+            if (!img) return;
+
+            const scrollAmount = img.clientWidth;
+            strip.scrollBy({ left: direction * scrollAmount, behavior: 'smooth' });
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelectorAll(".property-image").forEach(container => {
+                const imageCount = parseInt(container.dataset.imageCount || "0");
+                if (imageCount <= 1) {
+                    container.querySelectorAll(".nav-arrow").forEach(a => a.style.display = "none");
+                }
+            });
+        });
+    </script>
+}
