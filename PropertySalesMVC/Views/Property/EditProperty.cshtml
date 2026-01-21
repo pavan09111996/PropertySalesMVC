@@ -52,7 +52,7 @@
             <label class="form-label">BHK</label>
             <select asp-for="BHK" class="form-select" required>
                 <option value="">-- Select BHK --</option>
-                @for (int i = 1; i <= 5; i++)
+                @for (int i = 1; i <= 4; i++)
                 {
                     <option value="@i">@i BHK</option>
                 }
