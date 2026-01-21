@@ -35,18 +35,29 @@ namespace PropertySalesMVC.Models
     {
         public int TotalProperties { get; set; }
     }
+
+    public class LocationViewModel
+    {
+        public int Id { get; set; }
+        public string Location { get; set; }
+        public string? LocationName { get; internal set; }
+    }
     public class EditPropertyViewModel
     {
         public int PropertyId { get; set; }
 
         public string Title { get; set; }
-        public string Location { get; set; }
+
+        public int LocationId { get; set; }
+
         public decimal Price { get; set; }
         public string Description { get; set; }
 
+        public int LookingFor { get; set; } // 1 = Rent, 2 = Buy
+        public int BHK { get; set; }
+
         public List<PropertyImageViewModel> ExistingImages { get; set; } = new();
 
-        // IDs of images marked for deletion
         public List<int> RemoveImageIds { get; set; } = new();
 
         public List<IFormFile>? NewImages { get; set; }

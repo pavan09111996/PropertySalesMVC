@@ -118,6 +118,7 @@ namespace PropertySalesMVC.Controllers
         }
 
         [HttpGet]
+        //on click of Edit
         public IActionResult EditProperty(int id)
         {
             EditPropertyViewModel model = new();
@@ -126,8 +127,21 @@ namespace PropertySalesMVC.Controllers
             {
                 con.Open();
 
-                // Get property
-                string propertyQuery = "SELECT * FROM Properties WHERE Id = @Id";
+                /* =======================
+                   1️⃣ GET PROPERTY DETAILS
+                   ======================= */
+                string propertyQuery = @"
+            SELECT 
+                Id,
+                Title,
+                Location,
+                Price,
+                Description,
+                LookingFor,
+                BHK
+            FROM Properties
+            WHERE Id = @Id";
+
                 using SqlCommand cmd = new(propertyQuery, con);
                 cmd.Parameters.AddWithValue("@Id", id);
 
@@ -137,16 +151,22 @@ namespace PropertySalesMVC.Controllers
 
                 model.PropertyId = id;
                 model.Title = reader["Title"].ToString();
-                model.Location = reader["Location"].ToString();
+                model.LocationId = Convert.ToInt32(reader["Location"]);
                 model.Price = Convert.ToDecimal(reader["Price"]);
                 model.Description = reader["Description"].ToString();
+                model.LookingFor = Convert.ToInt32(reader["LookingFor"]);
+                model.BHK = Convert.ToInt32(reader["BHK"]);
+
                 reader.Close();
 
-                // Get images
+                /* =======================
+                   2️⃣ GET PROPERTY IMAGES
+                   ======================= */
                 string imageQuery = @"
-                                        SELECT ImageId, ImageBase64
-                                        FROM PropertyImages
-                                        WHERE PropertyId = @Id";
+            SELECT ImageId, ImageBase64
+            FROM PropertyImages
+            WHERE PropertyId = @Id";
+
                 using SqlCommand imgCmd = new(imageQuery, con);
                 imgCmd.Parameters.AddWithValue("@Id", id);
 
@@ -159,12 +179,42 @@ namespace PropertySalesMVC.Controllers
                         ImageBase64 = imgReader["ImageBase64"].ToString()
                     });
                 }
+                imgReader.Close();
+
+                /* =======================
+                   3️⃣ GET LOCATIONS (DROPDOWN)
+                   TABLE: locationmaster
+                   ======================= */
+               List<LocationViewModel> locations = new();
+
+string locQuery = @"
+    SELECT 
+        Id,
+        Location AS LocationName
+    FROM locationmaster
+    WHERE isActive = 1
+";
+
+using SqlCommand locCmd = new(locQuery, con);
+using SqlDataReader locReader = locCmd.ExecuteReader();
+
+while (locReader.Read())
+{
+    locations.Add(new LocationViewModel
+    {
+        Id = Convert.ToInt32(locReader["Id"]),
+        LocationName = locReader["LocationName"].ToString()
+    });
+}
+
+ViewBag.Locations = locations;
             }
 
             return View(model);
         }
 
- private AdminDetails GetAdminDetails()
+
+        private AdminDetails GetAdminDetails()
         {
             AdminDetails admin = null;
 
@@ -201,132 +251,153 @@ namespace PropertySalesMVC.Controllers
 
             return admin;
         }
+
+
+
+
         [HttpPost]
-[AdminAuthorize]
-[ValidateAntiForgeryToken]
-public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
-{
-    model.RemoveImageIds ??= new List<int>();
-    model.NewImages ??= new List<IFormFile>();
-
-    if (!ModelState.IsValid)
-    {
-        model.ExistingImages = GetPropertyImages(model.PropertyId);
-        return View(model);
-    }
-
-    try
-    {
-        await using SqlConnection con = new SqlConnection(
-            _configuration.GetConnectionString("DefaultConnection"));
-
-        await con.OpenAsync();
-
-        await using SqlTransaction tran = con.BeginTransaction();
-
-        try
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
         {
-            /* ===============================
-               1️⃣ UPDATE PROPERTY DETAILS
-            =============================== */
-            await using (SqlCommand cmd = new SqlCommand(@"
+            model.RemoveImageIds ??= new List<int>();
+            model.NewImages ??= new List<IFormFile>();
+
+            if (!ModelState.IsValid)
+            {
+                model.ExistingImages = GetPropertyImages(model.PropertyId);
+                return View(model);
+            }
+
+            try
+            {
+                // Use your connection string directly
+                string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
+                                          "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                          "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                          "Password=Ronak0910#;" +
+                                          "Encrypt=False;TrustServerCertificate=True;Connect Timeout=30;";
+
+                await using SqlConnection con = new SqlConnection(connectionString);
+                await con.OpenAsync();
+
+                await using SqlTransaction tran = con.BeginTransaction();
+
+                try
+                {
+                    /* ===============================
+                       1️⃣ UPDATE PROPERTY DETAILS
+                    =============================== */
+                    await using (SqlCommand cmd = new SqlCommand(@"
                 UPDATE Properties
                 SET Title = @Title,
                     Location = @Location,
                     Price = @Price,
-                    Description = @Description
+                    Description = @Description,
+                    LookingFor = @LookingFor,
+                    BHK = @BHK
                 WHERE Id = @Id", con, tran))
-            {
-                cmd.Parameters.Add("@Id", SqlDbType.Int).Value = model.PropertyId;
-                cmd.Parameters.Add("@Title", SqlDbType.NVarChar, 200).Value = model.Title;
-                cmd.Parameters.Add("@Location", SqlDbType.NVarChar, 200).Value = model.Location;
-                cmd.Parameters.Add("@Price", SqlDbType.Decimal).Value = model.Price;
-                cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = model.Description ?? "";
+                    {
+                        cmd.Parameters.Add("@Id", SqlDbType.Int).Value = model.PropertyId;
+                        cmd.Parameters.Add("@Title", SqlDbType.NVarChar, 200).Value = model.Title;
+                        cmd.Parameters.Add("@Location", SqlDbType.Int).Value = model.LocationId;   // INT ✅
+                        cmd.Parameters.Add("@Price", SqlDbType.Decimal).Value = model.Price;
+                        cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = model.Description ?? "";
+                        cmd.Parameters.Add("@LookingFor", SqlDbType.Int).Value = model.LookingFor;
+                        cmd.Parameters.Add("@BHK", SqlDbType.Int).Value = model.BHK;
 
-                await cmd.ExecuteNonQueryAsync();
-            }
+                        await cmd.ExecuteNonQueryAsync();
+                    }
 
-            /* ===============================
-               2️⃣ DELETE MARKED IMAGES
-            =============================== */
-            if (model.RemoveImageIds.Any())
-            {
-                await using SqlCommand deleteCmd = new SqlCommand(@"
+                    /* ===============================
+                       2️⃣ DELETE MARKED IMAGES
+                    =============================== */
+                    if (model.RemoveImageIds.Any())
+                    {
+                        await using SqlCommand deleteCmd = new SqlCommand(@"
                     DELETE FROM PropertyImages
                     WHERE ImageId = @ImageId
                       AND PropertyId = @PropertyId", con, tran);
 
-                deleteCmd.Parameters.Add("@ImageId", SqlDbType.Int);
-                deleteCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                         .Value = model.PropertyId;
+                        deleteCmd.Parameters.Add("@ImageId", SqlDbType.Int);
+                        deleteCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
+                                 .Value = model.PropertyId;
 
-                foreach (int imageId in model.RemoveImageIds.Distinct())
-                {
-                    deleteCmd.Parameters["@ImageId"].Value = imageId;
-                    await deleteCmd.ExecuteNonQueryAsync();
-                }
-            }
+                        foreach (int imageId in model.RemoveImageIds.Distinct())
+                        {
+                            deleteCmd.Parameters["@ImageId"].Value = imageId;
+                            await deleteCmd.ExecuteNonQueryAsync();
+                        }
+                    }
 
-            /* ===============================
-               3️⃣ INSERT NEW IMAGES
-            =============================== */
-            if (model.NewImages.Any())
-            {
-                await using SqlCommand insertCmd = new SqlCommand(@"
+                    /* ===============================
+                       3️⃣ INSERT NEW IMAGES
+                    =============================== */
+                    if (model.NewImages.Any())
+                    {
+                        await using SqlCommand insertCmd = new SqlCommand(@"
                     INSERT INTO PropertyImages (PropertyId, ImageBase64)
                     VALUES (@PropertyId, @ImageBase64)", con, tran);
 
-                insertCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                         .Value = model.PropertyId;
+                        insertCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
+                                 .Value = model.PropertyId;
+                        insertCmd.Parameters.Add("@ImageBase64", SqlDbType.NVarChar);
 
-                insertCmd.Parameters.Add("@ImageBase64", SqlDbType.NVarChar);
+                        foreach (var file in model.NewImages)
+                        {
+                            if (file == null || file.Length == 0)
+                                continue;
 
-                foreach (var file in model.NewImages)
+                            // 2MB safety limit
+                            if (file.Length > 2 * 1024 * 1024)
+                                throw new InvalidOperationException("Image size exceeds 2MB.");
+
+                            await using MemoryStream ms = new MemoryStream();
+                            await file.CopyToAsync(ms);
+
+                            insertCmd.Parameters["@ImageBase64"].Value =
+                                Convert.ToBase64String(ms.ToArray());
+
+                            await insertCmd.ExecuteNonQueryAsync();
+                        }
+                    }
+
+                    await tran.CommitAsync();
+
+                    TempData["PropertyUpdateMessage"] = "Property updated successfully.";
+                    return RedirectToAction("Dashboard", "Admin");
+                }
+                catch
                 {
-                    if (file == null || file.Length == 0)
-                        continue;
-
-                    // 2MB safety limit (recommended)
-                    if (file.Length > 2 * 1024 * 1024)
-                        throw new InvalidOperationException("Image size exceeds 2MB.");
-
-                    await using MemoryStream ms = new MemoryStream();
-                    await file.CopyToAsync(ms);
-
-                    insertCmd.Parameters["@ImageBase64"].Value =
-                        Convert.ToBase64String(ms.ToArray());
-
-                    await insertCmd.ExecuteNonQueryAsync();
+                    await tran.RollbackAsync();
+                    throw;
                 }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to update property {PropertyId}", model.PropertyId);
 
-            await tran.CommitAsync();
+                model.ExistingImages = GetPropertyImages(model.PropertyId);
+                ModelState.AddModelError("", "Failed to update property. Please try again.");
 
-            TempData["PropertyUpdateMessage"] = "Property updated successfully.";
-            return RedirectToAction("Dashboard", "Admin");
+                return View(model);
+            }
         }
-        catch
-        {
-            await tran.RollbackAsync();
-            throw;
-        }
-    }
-    catch (Exception ex)
-    {
-        _logger.LogError(ex, "Failed to update property {PropertyId}", model.PropertyId);
 
-        model.ExistingImages = GetPropertyImages(model.PropertyId);
-        ModelState.AddModelError("", "Failed to update property. Please try again.");
-
-        return View(model);
-    }
-}
-
+        /* ===============================
+           HELPER TO GET EXISTING IMAGES
+           =============================== */
         private List<PropertyImageViewModel> GetPropertyImages(int propertyId)
         {
             List<PropertyImageViewModel> images = new();
 
-            using SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
+            string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
+                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                      "Password=Ronak0910#;" +
+                                      "Encrypt=False;TrustServerCertificate=True;Connect Timeout=30;";
+
+            using SqlConnection con = new SqlConnection(connectionString);
             con.Open();
 
             using SqlCommand cmd = new SqlCommand(@"
@@ -348,6 +419,8 @@ public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
 
             return images;
         }
+
+
 
     }
 }

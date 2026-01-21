@@ -18,31 +18,81 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="PropertyId" />
 
-        <hr class="form-divider">
-
+        <!-- TITLE -->
         <div class="mb-3">
-            <label>Title</label>
-            <input asp-for="Title" class="form-control" />
+            <label class="form-label">Title</label>
+            <input asp-for="Title" class="form-control" required />
         </div>
 
+        <!-- LOOKING FOR -->
         <div class="mb-3">
-            <label>Location</label>
-            <input asp-for="Location" class="form-control" />
+            <label class="fw-bold d-block">Looking For</label>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input"
+                       type="radio"
+                       name="LookingFor"
+                       value="1"
+                       @(Model.LookingFor == 1 ? "checked" : "") />
+                <label class="form-check-label">Rent</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input"
+                       type="radio"
+                       name="LookingFor"
+                       value="2"
+                       @(Model.LookingFor == 2 ? "checked" : "") />
+                <label class="form-check-label">Buy</label>
+            </div>
         </div>
 
+        <!-- BHK -->
         <div class="mb-3">
-            <label>Price</label>
-            <input asp-for="Price" class="form-control" />
+            <label class="form-label">BHK</label>
+            <select asp-for="BHK" class="form-select" required>
+                <option value="">-- Select BHK --</option>
+                @for (int i = 1; i <= 5; i++)
+                {
+                    <option value="@i">@i BHK</option>
+                }
+            </select>
         </div>
 
+        <!-- LOCATION -->
         <div class="mb-3">
-            <label>Description</label>
-            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+            <label class="form-label">Location</label>
+            <select asp-for="LocationId" class="form-select" required>
+                <option value="">-- Select Location --</option>
+                @foreach (var loc in ViewBag.Locations)
+                {
+                    <option value="@loc.Id">@loc.LocationName</option>
+                }
+            </select>
         </div>
 
-        <hr class="form-divider">
+        <!-- PRICE -->
+        <div class="mb-3">
+            <label class="form-label">Price</label>
+            <input asp-for="Price"
+                   class="form-control"
+                   min="0"
+                   onkeydown="if(event.key==='-') event.preventDefault();"
+                   required />
+        </div>
 
-        <!-- IMAGE GRID (ONE GRID ONLY) -->
+        <!-- DESCRIPTION -->
+        <div class="mb-3">
+            <label class="form-label">Description</label>
+            <textarea asp-for="Description"
+                      class="form-control"
+                      rows="4"
+                      required></textarea>
+        </div>
+
+        <hr class="form-divider" />
+
+        <!-- EXISTING IMAGES -->
         <label class="fw-bold">Property Images</label>
 
         <div id="imageGrid" class="image-grid">
@@ -65,7 +115,7 @@
             }
         </div>
 
-        <!-- NEW IMAGES INPUT -->
+        <!-- NEW IMAGES -->
         <input type="file"
                id="newImagesInput"
                name="NewImages"
@@ -73,11 +123,15 @@
                multiple
                accept="image/*" />
 
-        <button class="btn-save mt-4">Update Property</button>
-        <a class="btn-cancel">Cancel</a>
+        <!-- ACTION BUTTONS -->
+        <div class="mt-4">
+            <button type="submit" class="btn btn-primary">Update Property</button>
+            <a asp-action="Dashboard"
+               asp-controller="Admin"
+               class="btn btn-secondary ms-2">Cancel</a>
+        </div>
     </form>
 </div>
-
 
 <script>
     const newImagesInput = document.getElementById("newImagesInput");
@@ -105,7 +159,9 @@
 
             card.innerHTML = `
                 <img src="${e.target.result}">
-                <button type="button" class="remove-btn" onclick="removeNewImage(${index})">×</button>
+                <button type="button"
+                        class="remove-btn"
+                        onclick="removeNewImage(${index})">×</button>
             `;
 
             imageGrid.appendChild(card);
@@ -121,9 +177,7 @@
     }
 
     function rebuildGrid() {
-        // Remove only NEW images
         document.querySelectorAll(".image-card.new").forEach(e => e.remove());
-
         newFiles.forEach((file, i) => renderNewImage(file, i));
     }
 

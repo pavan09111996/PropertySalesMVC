@@ -158,11 +158,13 @@ namespace PropertySalesMVC.Controllers
         [HttpPost]
         [AdminAuthorize]
         public IActionResult AddProperty(
-            string Title,
-            int Location,
-            decimal Price,
-            string Description,
-            List<IFormFile> Images)
+     string Title,
+     int Location,
+     decimal Price,
+     string Description,
+     int LookingFor,   // 1 = Rent, 2 = Buy (recommended mapping)
+     int BHK,
+     List<IFormFile> Images)
         {
             List<string> base64Images = new List<string>();
 
@@ -175,7 +177,6 @@ namespace PropertySalesMVC.Controllers
                         img.CopyTo(ms);
                         byte[] imageBytes = ms.ToArray();
                         string base64String = Convert.ToBase64String(imageBytes);
-
                         base64Images.Add(base64String);
                     }
                 }
@@ -184,30 +185,33 @@ namespace PropertySalesMVC.Controllers
             using (SqlConnection con = new SqlConnection(
                 "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
             {
-                string query = @"INSERT INTO Properties (Title, Location, Price, Description)
-                                OUTPUT INSERTED.Id
-                                VALUES (@Title, @Location, @Price, @Description)";
+                string query = @"
+            INSERT INTO Properties 
+            (Title, Location, Price, Description, LookingFor, BHK)
+            OUTPUT INSERTED.Id
+            VALUES 
+            (@Title, @Location, @Price, @Description, @LookingFor, @BHK)";
 
                 SqlCommand cmd = new SqlCommand(query, con);
                 cmd.Parameters.AddWithValue("@Title", Title);
                 cmd.Parameters.AddWithValue("@Location", Location);
                 cmd.Parameters.AddWithValue("@Price", Price);
                 cmd.Parameters.AddWithValue("@Description", Description);
+                cmd.Parameters.AddWithValue("@LookingFor", LookingFor);
+                cmd.Parameters.AddWithValue("@BHK", BHK);
 
                 con.Open();
 
                 int propertyId = (int)cmd.ExecuteScalar();
 
                 #region Insert images
-                //  Insert Images (Base64)
-                if (base64Images != null && base64Images.Any())
+                if (base64Images.Any())
                 {
                     foreach (var img in base64Images)
                     {
-
                         string imageQuery = @"
-                            INSERT INTO PropertyImages (PropertyId, ImageBase64)
-                            VALUES (@PropertyId, @ImageBase64)";
+                    INSERT INTO PropertyImages (PropertyId, ImageBase64)
+                    VALUES (@PropertyId, @ImageBase64)";
 
                         SqlCommand imageCmd = new SqlCommand(imageQuery, con);
                         imageCmd.Parameters.AddWithValue("@PropertyId", propertyId);
@@ -218,9 +222,14 @@ namespace PropertySalesMVC.Controllers
                 }
                 #endregion
             }
+
             TempData["PropertyAddedMessage"] = "Property added successfully";
             return RedirectToAction("Dashboard");
         }
+
+
+
+
 
         [HttpPost]
         [AdminAuthorize]
