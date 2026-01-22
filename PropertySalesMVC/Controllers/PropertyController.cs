@@ -507,6 +507,200 @@ namespace PropertySalesMVC.Controllers
 
 
 
+
+        [HttpGet]
+        public IActionResult Rent()
+        {
+            var properties = new Dictionary<int, PropertyViewModel>();
+
+
+            string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
+                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                      "Password=Ronak0910#;" +
+                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;";
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = @"
+            SELECT 
+                p.Id,
+                p.Title,
+                ISNULL(lm.Location,'') AS Location,
+                p.Price,
+                p.Description,
+                i.ImageBase64
+            FROM Properties p
+            LEFT JOIN PropertyImages i ON p.Id = i.PropertyId
+            LEFT JOIN LocationMaster lm ON p.Location = lm.Id
+            WHERE p.IsActive = 1 AND LookingFor = 2
+            ORDER BY p.Id";
+
+                using SqlCommand cmd = new SqlCommand(query, con);
+                con.Open();
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        int propertyId = reader.GetInt32(0);
+
+                        // Create property only once
+                        if (!properties.ContainsKey(propertyId))
+                        {
+                            properties[propertyId] = new PropertyViewModel
+                            {
+                                PropertyId = propertyId,
+                                Title = reader.GetString(1),
+                                Location = reader.GetString(2),
+                                Price = reader.GetDecimal(3),
+                                Description = reader.GetString(4),
+                                ImagesBase64 = new List<string>()
+                            };
+                        }
+
+                        // Add image if exists
+                        if (!reader.IsDBNull(5))
+                        {
+                            properties[propertyId].ImagesBase64.Add(reader.GetString(5));
+                        }
+                    }
+                }
+            }
+
+            ViewBag.PropertyCount = properties.Count;
+
+            // Load admin details
+            var adminDetails = GetAdminDetails();
+            if (adminDetails != null)
+            {
+                ViewBag.CompanyName = adminDetails.CompanyName;
+                ViewBag.OwnerName = adminDetails.OwnerName;
+                ViewBag.Designation = adminDetails.Designation;
+
+                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+
+                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+
+                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+            }
+
+            return View(properties.Values.ToList());
+        }
+
+        [HttpGet]
+        public IActionResult Sale()
+        {
+            var LocationDetails = GetLocations();
+            ViewBag.Locations = LocationDetails;
+            var adminDetails = GetAdminDetails();
+            if (adminDetails != null)
+            {
+                ViewBag.CompanyName = adminDetails.CompanyName;
+                ViewBag.OwnerName = adminDetails.OwnerName;
+                ViewBag.Designation = adminDetails.Designation;
+
+                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+
+                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+
+                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+            }
+            return View("Sale");
+        }
+
+
+        public List<LocationMasterNew> GetLocations()
+        {
+            var locations = new List<LocationMasterNew>();
+
+            string connectionString =
+                "Data Source=SQL6031.site4now.net,1433;" +
+                "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                "Password=Ronak0910#;" +
+                "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;";
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                string query = "SELECT Id, Location FROM LocationMaster ORDER BY Location";
+
+                using (SqlCommand cmd = new SqlCommand(query, con))
+                {
+                    con.Open();
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            locations.Add(new LocationMasterNew
+                            {
+                                Id = reader["Id"].ToString(),
+                                Location = reader["Location"].ToString()
+                            });
+                        }
+                    }
+                }
+            }
+
+            return locations;
+        }
+
+
+
+
+        [HttpPost]
+        public IActionResult Sale(PropertyViewModel model)
+        {
+            // 1️⃣ Validate input
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Please fill all required fields correctly.";
+                return RedirectToAction("SellProperty");
+            }
+
+            // 2️⃣ Map location number to name
+            string locationName = model.Location switch
+            {
+                "1" => "Borivali",
+                "2" => "Kandivali",
+                "3" => "Goregaon",
+                "4" => "Malad",
+                _ => "Unknown"
+            };
+
+           
+
+            //  Prepare WhatsApp message
+            string phoneNumber = "919594774795";
+
+            string messageText =
+                $@"Hello Ronak Estate 👋
+
+                I would like to sell my property 🏠
+
+                Property Details
+                Title: {model.Title}
+                Location: {locationName}
+                BHK: {model.BHK}
+                Expected Price: ₹{model.Price:N0}
+
+                Please contact me for further discussion.
+                Thank you 🙂";
+
+            string message = Uri.EscapeDataString(messageText);
+
+            // 5️⃣ Redirect to WhatsApp
+            return Redirect($"https://wa.me/{phoneNumber}?text={message}");
+        }
+
+
+
     }
 }
 

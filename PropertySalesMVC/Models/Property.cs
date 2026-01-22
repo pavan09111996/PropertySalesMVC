@@ -27,6 +27,7 @@ namespace PropertySalesMVC.Models
         public string Location { get; set; }
         public decimal Price { get; set; }
         public string Description { get; set; }
+        public int BHK { get; set; }
 
         public List<string> ImagesBase64 { get; set; } = new();
     }
@@ -95,6 +96,12 @@ namespace PropertySalesMVC.Models
     {
         public int Id { get; set; }
         public string LocationName { get; set; }
+    }
+
+    public class LocationMasterNew
+    {
+        public string Id { get; set; }
+        public string Location { get; set; }
     }
 
 }
