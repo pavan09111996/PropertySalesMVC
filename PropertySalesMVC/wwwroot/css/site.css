@@ -53,7 +53,9 @@ body {
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
 }
-
+header {
+  border-bottom: 1px solid #f1f5f9;
+}
 /* ================================
    STICKY FOOTER LAYOUT (CRITICAL)
 ================================ */
@@ -544,3 +546,39 @@ img {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
     border-radius: 6px;
 }
+/* ===============================
+   GLOBAL PREMIUM POLISH
+================================ */
+
+.container-xl {
+    max-width: 1320px;
+}
+
+/* Typography refinement */
+h1, h2, h3 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.02em;
+}
+
+p, span {
+    line-height: 1.7;
+}
+
+/* Remove horizontal scroll globally */
+html, body {
+    overflow-x: hidden;
+}
+
+/* Buttons feel heavier */
+.btn,
+.btn-admin-login {
+    font-weight: 600;
+    letter-spacing: 0.3px;
+}
+
+/* Subtle luxury shadow */
+.card,
+.property-info-card {
+    box-shadow: 0 30px 80px rgba(15, 23, 42, 0.08);
+}
+

@@ -16,7 +16,11 @@
 <section class="hero hero-video">
 
     <video class="hero-bg-video"
-           autoplay muted loop playsinline preload="metadata"
+           autoplay
+           muted
+           loop
+           playsinline
+           preload="metadata"
            poster="/images/hero-fallback.jpg">
         <source src="/videos/realestate-timelapse.mp4" type="video/mp4" />
     </video>
@@ -30,12 +34,14 @@
         </h1>
 
         <div class="hero-actions">
-            <a href="/Property/Buy"  class="@(mode=="Buy"?"active":"")">Buy</a>
-            <a href="/Property/Rent" class="@(mode=="Rent"?"active":"")">Rent</a>
-            <a href="/Property/Sell" class="@(mode=="Sell"?"active":"")">Sell</a>
+            <a href="/Property/Buy"  class="@(mode == "Buy" ? "active" : "")">Buy</a>
+            <a href="/Property/Rent" class="@(mode == "Rent" ? "active" : "")">Rent</a>
+            <a href="/Property/Sell" class="@(mode == "Sell" ? "active" : "")">Sell</a>
         </div>
 
-        <p>Handpicked premium properties available for @mode.ToLower()</p>
+        <p>
+            Handpicked premium properties available for @mode.ToLower()
+        </p>
 
     </div>
 </section>
@@ -44,6 +50,7 @@
 <div class="listing-filter rf-filter">
     <form method="get" class="rf-form">
 
+        <!-- LOCATION -->
         <div class="rf-group">
             <label class="rf-label">Location</label>
             <select name="locationId" class="rf-select">
@@ -51,14 +58,16 @@
 
                 @foreach (var loc in ViewBag.Locations)
                 {
-                    <option value="@loc.Id"
-                            selected="@(selectedLocation == Convert.ToInt32(loc.Id))">
+                    bool isSelected = selectedLocation == Convert.ToInt32(loc.Id);
+
+                    <option value="@loc.Id" selected="@(isSelected ? "selected" : null)">
                         @loc.Location
                     </option>
                 }
             </select>
         </div>
 
+        <!-- BHK -->
         <div class="rf-group">
             <label class="rf-label">BHK</label>
             <select name="bhk" class="rf-select">
@@ -66,8 +75,9 @@
 
                 @for (int i = 1; i <= 4; i++)
                 {
-                    <option value="@i"
-                            selected="@(selectedBHK == i)">
+                    bool isSelected = selectedBHK == i;
+
+                    <option value="@i" selected="@(isSelected ? "selected" : null)">
                         @i BHK
                     </option>
                 }
@@ -84,7 +94,9 @@
 <!-- ================= LISTING ================= -->
 <section class="properties-section">
 
-    <h2 class="section-title">Featured @mode Properties</h2>
+    <h2 class="section-title">
+        Featured @mode Properties
+    </h2>
 
     @await Html.PartialAsync("_PropertyGrid", Model)
 

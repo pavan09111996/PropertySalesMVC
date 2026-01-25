@@ -1,12 +1,18 @@
 ﻿using PropertySalesMVC;
 using PropertySalesMVC.Helpers;
+using Microsoft.AspNetCore.Http.Features;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // =======================
 // ADD SERVICES
-// =======================
+// =======================  
 builder.Services.AddControllersWithViews();
+builder.Services.Configure<FormOptions>(options =>
+{
+    options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // 50 MB
+});
+
 
 // Session configuration (REQUIRED)
 builder.Services.AddSession(options =>

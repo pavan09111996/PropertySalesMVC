@@ -167,6 +167,8 @@ body {
     max-width: 1200px;
     margin: 80px auto;
     padding: 0 20px;
+    padding-bottom: 80px; /* 🔥 prevents hard cut */
+    background: #ffffff;
 }
 
 .section-title {
@@ -193,6 +195,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 28px;
+    margin-bottom: 40px;
 }
 
 /* ===============================
@@ -216,9 +219,16 @@ body {
 .property-image {
     position: relative;
     width: 100%;
-    height: 240px;
     overflow: hidden;
     background: #f1f5f9;
+     aspect-ratio: 16 / 10;   /* 🔥 KEY FIX */
+}
+.property-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;      /* still premium */
+    object-position: center; /* 🔥 prevents awkward crop */
+    display: block;
 }
 
 .image-strip {

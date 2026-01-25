@@ -31,6 +31,11 @@ namespace PropertySalesMVC.Models
         public int? LocationId { get; set; }
 
         public List<string> ImagesBase64 { get; set; } = new();
+        public List<string> Images { get; set; } = new();
+        public string ImagePath { get; set; }
+        public List<string> ImagePaths { get; set; } = new();
+        public string VideoPath { get; set; }
+
     }
 
     public class PropertySummary
@@ -45,30 +50,76 @@ namespace PropertySalesMVC.Models
         public string? LocationName { get; internal set; }
     }
     public class EditPropertyViewModel
-    {
-        public int PropertyId { get; set; }
+{
+    /* =========================
+       PROPERTY CORE FIELDS
+    ========================= */
 
-        public string Title { get; set; }
+    public int PropertyId { get; set; }
 
-        public int LocationId { get; set; }
+    [Required]
+    public string Title { get; set; }
 
-        public decimal Price { get; set; }
-        public string Description { get; set; }
+    [Required]
+    public int LocationId { get; set; }
 
-        public int LookingFor { get; set; } // 1 = Rent, 2 = Buy
-        public int BHK { get; set; }
+    [Required]
+    public decimal Price { get; set; }
 
-        public List<PropertyImageViewModel> ExistingImages { get; set; } = new();
+    [Required]
+    public string Description { get; set; }
 
-        public List<int> RemoveImageIds { get; set; } = new();
+    [Required]
+    public int LookingFor { get; set; } // 1 = Rent, 2 = Buy, 3 = Sell
 
-        public List<IFormFile>? NewImages { get; set; }
-    }
+    [Required]
+    public int BHK { get; set; }
+
+    /* =========================
+       EXISTING IMAGES (DB)
+    ========================= */
+
+    public List<PropertyImageViewModel> ExistingImages { get; set; }
+        = new List<PropertyImageViewModel>();
+
+    /* =========================
+       REMOVE EXISTING IMAGES
+    ========================= */
+
+    public List<int> RemoveImageIds { get; set; }
+        = new List<int>();
+
+    /* =========================
+       NEW IMAGES (UPLOAD)
+    ========================= */
+
+    public List<IFormFile> NewImages { get; set; }
+        = new List<IFormFile>();
+
+    /* =========================
+       VIDEO SUPPORT (SINGLE)
+    ========================= */
+
+    // Existing video path (from DB)
+    public string? ExistingVideoPath { get; set; }
+
+    // Upload new video
+    public IFormFile? NewVideo { get; set; }
+
+    // Checkbox to remove existing video
+    public bool RemoveVideo { get; set; }
+}
 
     public class PropertyImageViewModel
     {
-        public int ImageId { get; set; }
-        public string ImageBase64 { get; set; }
+      public int ImageId { get; set; }
+
+    // Preferred (file-based)
+    public string? ImagePath { get; set; }
+
+    // Legacy fallback (Base64)
+    public string? ImageBase64 { get; set; }
+
     }
 
     public class AdminDetails
@@ -122,6 +173,32 @@ public class PropertyFilterVM
     public int PageSize { get; set; } = 9;
 }
 
+public class AddPropertyViewModel
+{
+    [Required]
+    public string Title { get; set; }
 
+    [Required]
+    public int Location { get; set; }
+
+    [Required]
+    public decimal Price { get; set; }
+
+
+    public string Description { get; set; }
+
+    [Required]
+    public int LookingFor { get; set; } // 1 = Rent, 2 = Buy
+
+    [Required]
+    public int BHK { get; set; }
+
+    // 🔥 Multiple Images
+    [Required]
+    public List<IFormFile> Images { get; set; } = new();
+
+    // 🎥 Optional Single Video
+    public IFormFile? Video { get; set; }
+}
 
 }

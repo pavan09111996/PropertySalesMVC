@@ -67,7 +67,12 @@ public IActionResult Dashboard()
 {
     var properties = new List<PropertyViewModel>();
 
-    using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
     {
         string query = @"
         SELECT 
@@ -76,14 +81,16 @@ public IActionResult Dashboard()
             ISNULL(lm.Location,'') AS Location,
             p.Price,
             p.Description,
-            (
-                SELECT TOP 1 ImageBase64
-                FROM PropertyImages
-                WHERE PropertyId = p.Id
-                ORDER BY p.Id
-            ) AS ImageBase64
+            img.ImagePath,
+            img.ImageBase64
         FROM Properties p
         LEFT JOIN LocationMaster lm ON p.Location = lm.Id
+        OUTER APPLY (
+            SELECT TOP 1 ImagePath, ImageBase64
+            FROM PropertyImages
+            WHERE PropertyId = p.Id
+            ORDER BY p.Id
+        ) img
         WHERE p.IsActive = 1";
 
         SqlCommand cmd = new SqlCommand(query, con);
@@ -93,6 +100,19 @@ public IActionResult Dashboard()
         {
             while (reader.Read())
             {
+                var images = new List<string>();
+
+                // ✅ Prefer ImagePath
+                if (!reader.IsDBNull(5))
+                {
+                    images.Add(reader.GetString(5)); // ImagePath
+                }
+                // 🔁 Fallback to Base64
+                else if (!reader.IsDBNull(6))
+                {
+                    images.Add("data:image/jpeg;base64," + reader.GetString(6));
+                }
+
                 properties.Add(new PropertyViewModel
                 {
                     PropertyId = reader.GetInt32(0),
@@ -100,9 +120,7 @@ public IActionResult Dashboard()
                     Location = reader.GetString(2),
                     Price = reader.GetDecimal(3),
                     Description = reader.GetString(4),
-                    ImagesBase64 = reader.IsDBNull(5)
-                        ? new List<string>()
-                        : new List<string> { reader.GetString(5) }
+                    Images = images // 🔥 use unified Images list
                 });
             }
         }
@@ -111,6 +129,7 @@ public IActionResult Dashboard()
     ViewBag.PropertyCount = properties.Count;
     return View(properties);
 }
+
 
 
         [HttpGet]
@@ -145,105 +164,231 @@ public IActionResult Dashboard()
             ViewBag.Locations = locationMasterList;
             return View();
         }
+[HttpPost]
+[AdminAuthorize]
+[ValidateAntiForgeryToken]
+public IActionResult AddProperty(AddPropertyViewModel model)
+{
+    if (!ModelState.IsValid)
+    {
+        TempData["ErrorMessage"] = "Please fill all required fields";
+        return RedirectToAction("AddProperty");
+    }
 
-        [HttpPost]
-        [AdminAuthorize]
-        public IActionResult AddProperty(
-     string Title,
-     int Location,
-     decimal Price,
-     string Description,
-     int LookingFor,   // 1 = Rent, 2 = Buy (recommended mapping)
-     int BHK,
-     List<IFormFile> Images)
-        {
-            List<string> base64Images = new List<string>();
+    int propertyId;
 
-            if (Images != null && Images.Any())
-            {
-                foreach (var img in Images)
-                {
-                    using (var ms = new MemoryStream())
-                    {
-                        img.CopyTo(ms);
-                        byte[] imageBytes = ms.ToArray();
-                        string base64String = Convert.ToBase64String(imageBytes);
-                        base64Images.Add(base64String);
-                    }
-                }
-            }
-
-            using (SqlConnection con = new SqlConnection(
-                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-            {
-                string query = @"
-            INSERT INTO Properties 
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;"))
+    {
+        string query = @"
+            INSERT INTO Properties
             (Title, Location, Price, Description, LookingFor, BHK)
             OUTPUT INSERTED.Id
-            VALUES 
+            VALUES
             (@Title, @Location, @Price, @Description, @LookingFor, @BHK)";
 
-                SqlCommand cmd = new SqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@Title", Title);
-                cmd.Parameters.AddWithValue("@Location", Location);
-                cmd.Parameters.AddWithValue("@Price", Price);
-                cmd.Parameters.AddWithValue("@Description", Description);
-                cmd.Parameters.AddWithValue("@LookingFor", LookingFor);
-                cmd.Parameters.AddWithValue("@BHK", BHK);
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@Title", model.Title);
+        cmd.Parameters.AddWithValue("@Location", model.Location);
+        cmd.Parameters.AddWithValue("@Price", model.Price);
+        cmd.Parameters.AddWithValue("@Description", model.Description);
+        cmd.Parameters.AddWithValue("@LookingFor", model.LookingFor);
+        cmd.Parameters.AddWithValue("@BHK", model.BHK);
 
-                con.Open();
+        con.Open();
+        propertyId = (int)cmd.ExecuteScalar();
 
-                int propertyId = (int)cmd.ExecuteScalar();
-
-                #region Insert images
-                if (base64Images.Any())
-                {
-                    foreach (var img in base64Images)
-                    {
-                        string imageQuery = @"
-                    INSERT INTO PropertyImages (PropertyId, ImageBase64)
-                    VALUES (@PropertyId, @ImageBase64)";
-
-                        SqlCommand imageCmd = new SqlCommand(imageQuery, con);
-                        imageCmd.Parameters.AddWithValue("@PropertyId", propertyId);
-                        imageCmd.Parameters.AddWithValue("@ImageBase64", img);
-
-                        imageCmd.ExecuteNonQuery();
-                    }
-                }
-                #endregion
-            }
-
-            TempData["PropertyAddedMessage"] = "Property added successfully";
-            return RedirectToAction("Dashboard");
-        }
-
-
-
-
-
-        [HttpPost]
-        [AdminAuthorize]
-        [ValidateAntiForgeryToken]
-        public IActionResult DeleteProperty(int propertyId)
+        /* ======================
+           SAVE IMAGES
+        ====================== */
+        if (model.Images != null && model.Images.Any())
         {
-            using (SqlConnection con = new SqlConnection(
-                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;"))
+            string uploadRoot = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "properties",
+                propertyId.ToString());
+
+            Directory.CreateDirectory(uploadRoot);
+
+            foreach (var img in model.Images)
             {
-                string query = @"
-                                UPDATE Properties 
-                                SET IsActive = 0 
-                                WHERE Id = @PropertyId";
+                string fileName = Guid.NewGuid() + Path.GetExtension(img.FileName);
+                string fullPath = Path.Combine(uploadRoot, fileName);
 
-                SqlCommand cmd = new SqlCommand(query, con);
-                cmd.Parameters.AddWithValue("@PropertyId", propertyId);
+                using var fs = new FileStream(fullPath, FileMode.Create);
+                img.CopyTo(fs);
 
-                con.Open();
-                cmd.ExecuteNonQuery();
+                string imagePath = $"/uploads/properties/{propertyId}/{fileName}";
+
+                SqlCommand imgCmd = new SqlCommand(
+                    "INSERT INTO PropertyImages (PropertyId, ImagePath) VALUES (@Pid, @Path)", con);
+                imgCmd.Parameters.AddWithValue("@Pid", propertyId);
+                imgCmd.Parameters.AddWithValue("@Path", imagePath);
+                imgCmd.ExecuteNonQuery();
             }
-            TempData["PropertyDeletedMessage"] = "Property deleted successfully";
-            return RedirectToAction("Dashboard");
         }
+
+        /* ======================
+           SAVE VIDEO (OPTIONAL)
+        ====================== */
+        if (model.Video != null && model.Video.Length > 0)
+        {
+            string videoDir = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "properties",
+                propertyId.ToString(),
+                "video");
+
+            Directory.CreateDirectory(videoDir);
+
+            string videoName = "property-video" + Path.GetExtension(model.Video.FileName);
+            string videoPath = Path.Combine(videoDir, videoName);
+
+            using var vs = new FileStream(videoPath, FileMode.Create);
+            model.Video.CopyTo(vs);
+
+            SqlCommand vidCmd = new SqlCommand(
+                "UPDATE Properties SET VideoPath=@Video WHERE Id=@Id", con);
+            vidCmd.Parameters.AddWithValue("@Video",
+                $"/uploads/properties/{propertyId}/video/{videoName}");
+            vidCmd.Parameters.AddWithValue("@Id", propertyId);
+            vidCmd.ExecuteNonQuery();
+        }
+    }
+
+    TempData["PropertyAddedMessage"] = "Property added successfully";
+    return RedirectToAction("Dashboard");
+}
+
+[HttpPost]
+[AdminAuthorize]
+[ValidateAntiForgeryToken]
+public IActionResult DeleteProperty(int propertyId)
+{
+    string connectionString =
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;";
+
+    using SqlConnection con = new SqlConnection(connectionString);
+    con.Open();
+
+    using SqlTransaction tran = con.BeginTransaction();
+
+    try
+    {
+        /* ===============================
+           1️⃣ FETCH IMAGE + VIDEO PATHS
+        =============================== */
+        List<string> imagePaths = new();
+        string? videoPath = null;
+
+        // Images
+        using (SqlCommand imgCmd = new SqlCommand(
+            "SELECT ImagePath FROM PropertyImages WHERE PropertyId = @Id",
+            con, tran))
+        {
+            imgCmd.Parameters.AddWithValue("@Id", propertyId);
+
+            using SqlDataReader reader = imgCmd.ExecuteReader();
+            while (reader.Read())
+            {
+                if (!reader.IsDBNull(0))
+                    imagePaths.Add(reader.GetString(0));
+            }
+        }
+
+        // Video
+        using (SqlCommand vidCmd = new SqlCommand(
+            "SELECT VideoPath FROM Properties WHERE Id = @Id",
+            con, tran))
+        {
+            vidCmd.Parameters.AddWithValue("@Id", propertyId);
+            videoPath = vidCmd.ExecuteScalar() as string;
+        }
+
+        /* ===============================
+           2️⃣ DELETE FILES FROM DISK
+        =============================== */
+        foreach (var path in imagePaths)
+        {
+            string fullPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                path.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
+            );
+
+            if (System.IO.File.Exists(fullPath))
+                System.IO.File.Delete(fullPath);
+        }
+
+        if (!string.IsNullOrEmpty(videoPath))
+        {
+            string fullVideoPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                videoPath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
+            );
+
+            if (System.IO.File.Exists(fullVideoPath))
+                System.IO.File.Delete(fullVideoPath);
+        }
+
+        /* ===============================
+           3️⃣ DELETE IMAGE RECORDS
+        =============================== */
+        using (SqlCommand delImagesCmd = new SqlCommand(
+            "DELETE FROM PropertyImages WHERE PropertyId = @Id",
+            con, tran))
+        {
+            delImagesCmd.Parameters.AddWithValue("@Id", propertyId);
+            delImagesCmd.ExecuteNonQuery();
+        }
+
+        /* ===============================
+           4️⃣ SOFT DELETE PROPERTY
+        =============================== */
+        using (SqlCommand delPropertyCmd = new SqlCommand(@"
+            UPDATE Properties
+            SET IsActive = 0,
+                VideoPath = NULL
+            WHERE Id = @Id", con, tran))
+        {
+            delPropertyCmd.Parameters.AddWithValue("@Id", propertyId);
+            delPropertyCmd.ExecuteNonQuery();
+        }
+
+        /* ===============================
+           5️⃣ OPTIONAL: DELETE PROPERTY FOLDER
+        =============================== */
+        string propertyFolder = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "uploads",
+            "properties",
+            propertyId.ToString());
+
+        if (Directory.Exists(propertyFolder))
+            Directory.Delete(propertyFolder, recursive: true);
+
+        tran.Commit();
+
+        TempData["PropertyDeletedMessage"] = "Property deleted successfully.";
+        return RedirectToAction("Dashboard");
+    }
+    catch
+    {
+        tran.Rollback();
+        throw;
+    }
+}
+
 
         public IActionResult Logout()
         {

@@ -22,18 +22,15 @@
                 <button class="nav-arrow left" onclick="scrollImages(this, -1)">❮</button>
 
                 <div class="image-strip">
-                    @if (property.ImagesBase64?.Any() == true)
+                    @if (property.Images?.Any() == true)
                     {
-                        foreach (var img in property.ImagesBase64)
-                        {
-<img src="/Admin/PropertyImage?propertyId=@property.PropertyId"
-     class="property-thumb"
-     loading="lazy" />                        }
+                        <img src="@property.Images.First()" loading="lazy" />
                     }
                     else
                     {
-                        <img src="~/images/no-image.png" loading="lazy"/>
+                        <img src="~/images/no-image.png" />
                     }
+
                 </div>
 
                 <button class="nav-arrow right" onclick="scrollImages(this, 1)">❯</button>

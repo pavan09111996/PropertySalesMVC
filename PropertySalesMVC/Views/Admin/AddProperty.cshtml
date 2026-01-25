@@ -1,19 +1,22 @@
-﻿@{
+﻿@model AddPropertyViewModel
+@{
     ViewData["Title"] = "Add Property";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <h2 class="mb-4">Add New Property</h2>
 
-<form method="post"
+<form asp-action="AddProperty"
       asp-controller="Admin"
-      asp-action="AddProperty"
+      method="post"
       enctype="multipart/form-data">
+
+    @Html.AntiForgeryToken()  <!-- 🔥 REQUIRED -->
 
     <!-- Property Title -->
     <div class="mb-3">
         <label class="form-label">Property Title</label>
-        <input type="text" class="form-control" name="Title" required />
+        <input asp-for="Title" class="form-control" required />
     </div>
 
     <!-- Looking For -->
@@ -21,43 +24,38 @@
         <label class="form-label d-block">Looking For</label>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input"
+            <input asp-for="LookingFor"
+                   class="form-check-input"
                    type="radio"
-                   name="LookingFor"
-                   id="lookingRent"
-                   value="1"
-                   required />
-            <label class="form-check-label" for="lookingRent">Rent</label>
+                   value="1" />
+            <label class="form-check-label">Rent</label>
         </div>
 
         <div class="form-check form-check-inline">
-            <input class="form-check-input"
+            <input asp-for="LookingFor"
+                   class="form-check-input"
                    type="radio"
-                   name="LookingFor"
-                   id="lookingBuy"
-                   value="2"
-                   required />
-            <label class="form-check-label" for="lookingBuy">Buy</label>
+                   value="2" />
+            <label class="form-check-label">Buy</label>
         </div>
     </div>
 
     <!-- BHK -->
     <div class="mb-3">
         <label class="form-label">BHK</label>
-        <select class="form-select" name="BHK" required>
+        <select asp-for="BHK" class="form-select" required>
             <option value="">-- Select BHK --</option>
             <option value="1">1 BHK</option>
             <option value="2">2 BHK</option>
             <option value="3">3 BHK</option>
             <option value="4">4 BHK</option>
-           
         </select>
     </div>
 
     <!-- Location -->
     <div class="mb-3">
         <label class="form-label">Location</label>
-        <select class="form-select" name="Location" required>
+        <select asp-for="Location" class="form-select" required>
             <option value="">-- Select Location --</option>
             @foreach (var loc in ViewBag.Locations)
             {
@@ -69,9 +67,9 @@
     <!-- Price -->
     <div class="mb-3">
         <label class="form-label">Price</label>
-        <input type="number"
+        <input asp-for="Price"
+               type="number"
                class="form-control"
-               name="Price"
                min="0"
                step="1"
                required />
@@ -80,129 +78,36 @@
     <!-- Description -->
     <div class="mb-3">
         <label class="form-label">Description</label>
-        <textarea class="form-control"
-                  name="Description"
+        <textarea asp-for="Description"
+                  class="form-control"
                   rows="4"
                   required></textarea>
     </div>
 
-    <!-- Multiple Images -->
+    <!-- Images -->
     <div class="mb-3">
         <label class="form-label">Property Images</label>
-
-        <!-- Image Preview Grid -->
-        <div id="imagePreview" class="image-grid mb-3"></div>
-
-        <input type="file"
+        <input asp-for="Images"
+               type="file"
                class="form-control"
-               id="imageInput"
-               name="Images"
                multiple
-               accept="image/*"
+               accept=".jpg,.jpeg,.png,.webp"
                required />
+    </div>
+
+    <!-- Video -->
+    <div class="mb-3">
+        <label class="form-label">Property Video (optional)</label>
+        <input asp-for="Video"
+               type="file"
+               class="form-control"
+               accept="video/mp4,video/webm,video/ogg" />
+        <small class="text-muted">
+            Max 1 video · Recommended under 20MB
+        </small>
     </div>
 
     <button type="submit" class="btn btn-primary">
         Save Property
     </button>
 </form>
-
-<script>
-    const imageInput = document.getElementById("imageInput");
-    const imagePreview = document.getElementById("imagePreview");
-
-    let selectedFiles = [];
-
-    imageInput.addEventListener("change", function () {
-        const newFiles = Array.from(imageInput.files);
-
-        newFiles.forEach(file => {
-            if (!selectedFiles.some(f => f.name === file.name && f.size === file.size)) {
-                selectedFiles.push(file);
-            }
-        });
-
-        renderPreview();
-        syncInputFiles();
-    });
-
-    function renderPreview() {
-        imagePreview.innerHTML = "";
-
-        selectedFiles.forEach((file, index) => {
-            const reader = new FileReader();
-
-            reader.onload = e => {
-                const card = document.createElement("div");
-                card.className = "image-card";
-
-                card.innerHTML = `
-                    <img src="${e.target.result}" alt="preview">
-                    <button type="button"
-                            class="remove-btn"
-                            onclick="removeImage(${index})">×</button>
-                `;
-
-                imagePreview.appendChild(card);
-            };
-
-            reader.readAsDataURL(file);
-        });
-    }
-
-    function removeImage(index) {
-        selectedFiles.splice(index, 1);
-        renderPreview();
-        syncInputFiles();
-    }
-
-    function syncInputFiles() {
-        const dt = new DataTransfer();
-        selectedFiles.forEach(f => dt.items.add(f));
-        imageInput.files = dt.files;
-    }
-</script>
-
-<style>
-    .image-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-        gap: 12px;
-        max-width: 600px;
-    }
-
-    .image-card {
-        position: relative;
-        width: 100%;
-        aspect-ratio: 1 / 1;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid #dee2e6;
-        background: #f8f9fa;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    }
-
-        .image-card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-    .remove-btn {
-        position: absolute;
-        top: 6px;
-        right: 6px;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        border: none;
-        background: rgba(0,0,0,0.7);
-        color: #fff;
-        font-size: 16px;
-        cursor: pointer;
-    }
-
-        .remove-btn:hover {
-            background: #dc3545;
-        }
-</style>

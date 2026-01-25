@@ -8,7 +8,7 @@
 
 <div class="edit-property-container">
     <h2>Edit Property</h2>
-    <p class="edit-subtitle">Update property details and manage images</p>
+    <p class="edit-subtitle">Update property details and manage media</p>
 
     <form asp-action="EditProperty"
           asp-controller="Property"
@@ -18,36 +18,42 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="PropertyId" />
 
-        <!-- TITLE -->
+        <!-- ================= TITLE ================= -->
         <div class="mb-3">
             <label class="form-label">Title</label>
             <input asp-for="Title" class="form-control" required />
         </div>
 
-        <!-- LOOKING FOR -->
+        <!-- ================= LOOKING FOR ================= -->
         <div class="mb-3">
             <label class="fw-bold d-block">Looking For</label>
 
             <div class="form-check form-check-inline">
                 <input class="form-check-input"
                        type="radio"
-                       name="LookingFor"
-                       value="1"
-                       @(Model.LookingFor == 1 ? "checked" : "") />
+                       asp-for="LookingFor"
+                       value="1" />
                 <label class="form-check-label">Rent</label>
             </div>
 
             <div class="form-check form-check-inline">
                 <input class="form-check-input"
                        type="radio"
-                       name="LookingFor"
-                       value="2"
-                       @(Model.LookingFor == 2 ? "checked" : "") />
+                       asp-for="LookingFor"
+                       value="2" />
                 <label class="form-check-label">Buy</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input class="form-check-input"
+                       type="radio"
+                       asp-for="LookingFor"
+                       value="3" />
+                <label class="form-check-label">Sell</label>
             </div>
         </div>
 
-        <!-- BHK -->
+        <!-- ================= BHK ================= -->
         <div class="mb-3">
             <label class="form-label">BHK</label>
             <select asp-for="BHK" class="form-select" required>
@@ -59,7 +65,7 @@
             </select>
         </div>
 
-        <!-- LOCATION -->
+        <!-- ================= LOCATION ================= -->
         <div class="mb-3">
             <label class="form-label">Location</label>
             <select asp-for="LocationId" class="form-select" required>
@@ -71,7 +77,7 @@
             </select>
         </div>
 
-        <!-- PRICE -->
+        <!-- ================= PRICE ================= -->
         <div class="mb-3">
             <label class="form-label">Price</label>
             <input asp-for="Price"
@@ -81,7 +87,7 @@
                    required />
         </div>
 
-        <!-- DESCRIPTION -->
+        <!-- ================= DESCRIPTION ================= -->
         <div class="mb-3">
             <label class="form-label">Description</label>
             <textarea asp-for="Description"
@@ -92,14 +98,21 @@
 
         <hr class="form-divider" />
 
-        <!-- EXISTING IMAGES -->
-        <label class="fw-bold">Property Images</label>
+        <!-- ================= EXISTING IMAGES ================= -->
+        <label class="fw-bold mb-2">Property Images</label>
 
-        <div id="imageGrid" class="image-grid">
+        <div id="imageGrid" class="image-grid mb-3">
             @foreach (var img in Model.ExistingImages)
             {
                 <div class="image-card existing">
-                    <img src="data:image/jpeg;base64,@img.ImageBase64" />
+                    @if (!string.IsNullOrEmpty(img.ImagePath))
+                    {
+                        <img src="@img.ImagePath" />
+                    }
+                    else
+                    {
+                        <img src="data:image/jpeg;base64,@img.ImageBase64" />
+                    }
 
                     <button type="button"
                             class="remove-btn"
@@ -115,21 +128,61 @@
             }
         </div>
 
-        <!-- NEW IMAGES -->
-        <input type="file"
-               id="newImagesInput"
-               name="NewImages"
-               class="form-control mt-3"
-               multiple
-               accept="image/*" />
+        <!-- ================= NEW IMAGES ================= -->
+        <div class="mb-3">
+            <label class="form-label">Add New Images</label>
+            <input type="file"
+                   id="newImagesInput"
+                   name="NewImages"
+                   class="form-control"
+                   multiple
+                   accept=".jpg,.jpeg,.png,.webp" />
+        </div>
 
-        <!-- ACTION BUTTONS -->
+        <hr class="form-divider" />
+
+        <!-- ================= VIDEO ================= -->
+        <label class="fw-bold mb-2">Property Video</label>
+
+        @if (!string.IsNullOrEmpty(Model.ExistingVideoPath))
+        {
+            <div class="mb-2">
+                <video controls width="100%" style="max-height:280px">
+                    <source src="@Model.ExistingVideoPath" type="video/mp4" />
+                </video>
+
+                <div class="form-check mt-2">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           asp-for="RemoveVideo" />
+                    <label class="form-check-label">
+                        Remove existing video
+                    </label>
+                </div>
+            </div>
+        }
+
+        <div class="mb-3">
+            <input type="file"
+                   name="NewVideo"
+                   class="form-control"
+                   accept="video/mp4,video/webm,video/ogg" />
+            <small class="text-muted">Upload to replace existing video</small>
+        </div>
+
+        <!-- ================= ACTIONS ================= -->
         <div class="mt-4">
-            <button type="submit" class="btn btn-primary">Update Property</button>
+            <button type="submit" class="btn btn-primary">
+                Update Property
+            </button>
+
             <a asp-action="Dashboard"
                asp-controller="Admin"
-               class="btn btn-secondary ms-2">Cancel</a>
+               class="btn btn-secondary ms-2">
+                Cancel
+            </a>
         </div>
+
     </form>
 </div>
 

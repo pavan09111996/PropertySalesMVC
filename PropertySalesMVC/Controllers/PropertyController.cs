@@ -49,89 +49,75 @@ namespace PropertySalesMVC.Controllers
             return View(list);
         }
 
+[HttpGet]
+public IActionResult PropertyDetails(int id)
+{
+    PropertyViewModel model = new();
 
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;"))
+    {
+        con.Open();
 
-        [HttpGet]
-        public IActionResult PropertyDetails(int id)
+        // PROPERTY
+        SqlCommand cmd = new SqlCommand(@"
+            SELECT p.Id, p.Title, ISNULL(lm.Location,''), p.Price, p.Description, p.BHK, p.VideoPath
+            FROM Properties p
+            LEFT JOIN LocationMaster lm ON p.Location = lm.Id
+            WHERE p.Id = @Id AND p.IsActive = 1", con);
+
+        cmd.Parameters.AddWithValue("@Id", id);
+
+        using (var dr = cmd.ExecuteReader())
         {
-            PropertyViewModel model = new PropertyViewModel();
+            if (!dr.Read()) return NotFound();
 
-            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-            {
-                con.Open();
-
-                // PROPERTY
-                string propertyQuery = @"
-                    SELECT p.Id, p.Title, isnull(lm.Location,'') as Location, p.Price, p.Description,p.bhk 
-                    FROM Properties p
-                    LEFT JOIN LocationMaster lm
-                    on p.Location = lm.id
-                    WHERE p.Id = @Id AND p.IsActive = 1
-                     ";
-
-                SqlCommand cmd = new SqlCommand(propertyQuery, con);
-                cmd.Parameters.AddWithValue("@Id", id);
-
-                using (SqlDataReader dr = cmd.ExecuteReader())
-                {
-                    if (!dr.Read())
-                        return NotFound();
-
-                    model.PropertyId = dr.GetInt32(0);
-                    model.Title = dr.GetString(1);
-                    model.Location = dr.GetString(2);
-                    model.Price = dr.GetDecimal(3);
-                    model.Description = dr.GetString(4);
-                    model.BHK = dr.GetInt32(5);
-                }
-
-                // IMAGES
-                string imageQuery = @"SELECT ImageBase64 FROM PropertyImages WHERE PropertyId = @PropertyId";
-                SqlCommand imgCmd = new SqlCommand(imageQuery, con);
-                imgCmd.Parameters.AddWithValue("@PropertyId", id);
-
-                using (SqlDataReader imgDr = imgCmd.ExecuteReader())
-                {
-                    while (imgDr.Read())
-                    {
-                        model.ImagesBase64.Add(imgDr.GetString(0));
-                    }
-                }
-            }
-            var adminDetails = GetAdminDetails();
-
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
-
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
-            return View(model);
+            model.PropertyId = dr.GetInt32(0);
+            model.Title = dr.GetString(1);
+            model.Location = dr.GetString(2);
+            model.Price = dr.GetDecimal(3);
+            model.Description = dr.GetString(4);
+            model.BHK = dr.GetInt32(5);
+            model.VideoPath = dr.IsDBNull(6) ? null : dr.GetString(6);
         }
 
-        [HttpGet]
-        //on click of Edit
-        public IActionResult EditProperty(int id)
+        // IMAGES
+        SqlCommand imgCmd = new SqlCommand(
+            "SELECT ImagePath FROM PropertyImages WHERE PropertyId = @Id", con);
+        imgCmd.Parameters.AddWithValue("@Id", id);
+
+        using (var r = imgCmd.ExecuteReader())
         {
-            EditPropertyViewModel model = new();
+            while (r.Read())
+                model.Images.Add(r.GetString(0));
+        }
+    }
 
-            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-            {
-                con.Open();
+    return View(model);
+}
 
-                /* =======================
-                   1️⃣ GET PROPERTY DETAILS
-                   ======================= */
-                string propertyQuery = @"
+
+[HttpGet]
+[AdminAuthorize]
+// on click of Edit
+public IActionResult EditProperty(int id)
+{
+    EditPropertyViewModel model = new();
+
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+    {
+        con.Open();
+
+        /* =======================
+           1️⃣ GET PROPERTY DETAILS
+           ======================= */
+        string propertyQuery = @"
             SELECT 
                 Id,
                 Title,
@@ -139,14 +125,17 @@ namespace PropertySalesMVC.Controllers
                 Price,
                 Description,
                 LookingFor,
-                BHK
+                BHK,
+                VideoPath
             FROM Properties
             WHERE Id = @Id";
 
-                using SqlCommand cmd = new(propertyQuery, con);
-                cmd.Parameters.AddWithValue("@Id", id);
+        using (SqlCommand cmd = new SqlCommand(propertyQuery, con))
+        {
+            cmd.Parameters.AddWithValue("@Id", id);
 
-                using SqlDataReader reader = cmd.ExecuteReader();
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
                 if (!reader.Read())
                     return NotFound();
 
@@ -158,61 +147,81 @@ namespace PropertySalesMVC.Controllers
                 model.LookingFor = Convert.ToInt32(reader["LookingFor"]);
                 model.BHK = Convert.ToInt32(reader["BHK"]);
 
-                reader.Close();
+                // ✅ EXISTING VIDEO
+                if (!reader.IsDBNull(reader.GetOrdinal("VideoPath")))
+                {
+                    model.ExistingVideoPath = reader["VideoPath"].ToString();
+                }
+            }
+        }
 
-                /* =======================
-                   2️⃣ GET PROPERTY IMAGES
-                   ======================= */
-                string imageQuery = @"
-            SELECT ImageId, ImageBase64
+        /* =======================
+           2️⃣ GET PROPERTY IMAGES
+           (ImagePath preferred, Base64 fallback)
+           ======================= */
+        string imageQuery = @"
+            SELECT ImageId, ImagePath, ImageBase64
             FROM PropertyImages
             WHERE PropertyId = @Id";
 
-                using SqlCommand imgCmd = new(imageQuery, con);
-                imgCmd.Parameters.AddWithValue("@Id", id);
+        using (SqlCommand imgCmd = new SqlCommand(imageQuery, con))
+        {
+            imgCmd.Parameters.AddWithValue("@Id", id);
 
-                using SqlDataReader imgReader = imgCmd.ExecuteReader();
+            using (SqlDataReader imgReader = imgCmd.ExecuteReader())
+            {
                 while (imgReader.Read())
                 {
-                    model.ExistingImages.Add(new PropertyImageViewModel
+                    PropertyImageViewModel imageVm = new()
                     {
-                        ImageId = Convert.ToInt32(imgReader["ImageId"]),
-                        ImageBase64 = imgReader["ImageBase64"].ToString()
-                    });
-                }
-                imgReader.Close();
+                        ImageId = Convert.ToInt32(imgReader["ImageId"])
+                    };
 
-                /* =======================
-                   3️⃣ GET LOCATIONS (DROPDOWN)
-                   TABLE: locationmaster
-                   ======================= */
-                List<LocationViewModel> locations = new();
-
-                string locQuery = @"
-    SELECT 
-        Id,
-        Location AS LocationName
-    FROM locationmaster
-    WHERE isActive = 1
-";
-
-                using SqlCommand locCmd = new(locQuery, con);
-                using SqlDataReader locReader = locCmd.ExecuteReader();
-
-                while (locReader.Read())
-                {
-                    locations.Add(new LocationViewModel
+                    if (!imgReader.IsDBNull(imgReader.GetOrdinal("ImagePath")))
                     {
-                        Id = Convert.ToInt32(locReader["Id"]),
-                        LocationName = locReader["LocationName"].ToString()
-                    });
-                }
+                        imageVm.ImagePath = imgReader["ImagePath"].ToString();
+                    }
+                    else if (!imgReader.IsDBNull(imgReader.GetOrdinal("ImageBase64")))
+                    {
+                        imageVm.ImageBase64 = imgReader["ImageBase64"].ToString();
+                    }
 
-                ViewBag.Locations = locations;
+                    model.ExistingImages.Add(imageVm);
+                }
             }
-
-            return View(model);
         }
+
+        /* =======================
+           3️⃣ GET LOCATIONS (DROPDOWN)
+           ======================= */
+        List<LocationViewModel> locations = new();
+
+        string locQuery = @"
+            SELECT 
+                Id,
+                Location AS LocationName
+            FROM LocationMaster
+            WHERE IsActive = 1";
+
+        using (SqlCommand locCmd = new SqlCommand(locQuery, con))
+        using (SqlDataReader locReader = locCmd.ExecuteReader())
+        {
+            while (locReader.Read())
+            {
+                locations.Add(new LocationViewModel
+                {
+                    Id = Convert.ToInt32(locReader["Id"]),
+                    LocationName = locReader["LocationName"].ToString()
+                });
+            }
+        }
+
+        ViewBag.Locations = locations;
+    }
+
+    return View(model);
+}
+
 
 
         private AdminDetails GetAdminDetails()
@@ -254,136 +263,266 @@ namespace PropertySalesMVC.Controllers
         }
 
 
+[HttpPost]
+[AdminAuthorize]
+[ValidateAntiForgeryToken]
+[RequestSizeLimit(50 * 1024 * 1024)]
+[RequestFormLimits(MultipartBodyLengthLimit = 50 * 1024 * 1024)]
+public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
+{
+    model.RemoveImageIds ??= new List<int>();
+    model.NewImages ??= new List<IFormFile>();
 
+    if (!ModelState.IsValid)
+    {
+        model.ExistingImages = GetPropertyImages(model.PropertyId);
+        return View(model);
+    }
 
-        [HttpPost]
-        [AdminAuthorize]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProperty(EditPropertyViewModel model)
+    string connectionString =
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;Connect Timeout=30;";
+
+    await using SqlConnection con = new SqlConnection(connectionString);
+    await con.OpenAsync();
+
+    await using SqlTransaction tran = con.BeginTransaction();
+
+    try
+    {
+        /* ===============================
+           1️⃣ UPDATE PROPERTY DETAILS
+        =============================== */
+        await using (SqlCommand cmd = new SqlCommand(@"
+            UPDATE Properties
+            SET Title = @Title,
+                Location = @Location,
+                Price = @Price,
+                Description = @Description,
+                LookingFor = @LookingFor,
+                BHK = @BHK
+            WHERE Id = @Id", con, tran))
         {
-            model.RemoveImageIds ??= new List<int>();
-            model.NewImages ??= new List<IFormFile>();
+            cmd.Parameters.AddWithValue("@Id", model.PropertyId);
+            cmd.Parameters.AddWithValue("@Title", model.Title);
+            cmd.Parameters.AddWithValue("@Location", model.LocationId);
+            cmd.Parameters.AddWithValue("@Price", model.Price);
+            cmd.Parameters.AddWithValue("@Description", model.Description ?? "");
+            cmd.Parameters.AddWithValue("@LookingFor", model.LookingFor);
+            cmd.Parameters.AddWithValue("@BHK", model.BHK);
 
-            if (!ModelState.IsValid)
+            await cmd.ExecuteNonQueryAsync();
+        }
+
+        /* ===============================
+           2️⃣ DELETE MARKED IMAGES (DB + FILE)
+        =============================== */
+        if (model.RemoveImageIds.Any())
+        {
+            foreach (int imageId in model.RemoveImageIds.Distinct())
             {
-                model.ExistingImages = GetPropertyImages(model.PropertyId);
-                return View(model);
-            }
+                string getPathQuery = "SELECT ImagePath FROM PropertyImages WHERE ImageId=@ImageId";
+                await using SqlCommand pathCmd = new SqlCommand(getPathQuery, con, tran);
+                pathCmd.Parameters.AddWithValue("@ImageId", imageId);
 
-            try
-            {
-                // Use your connection string directly
-                string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
-                                          "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-                                          "User ID=db_ac36b8_ronakrealestate00_admin;" +
-                                          "Password=Ronak0910#;" +
-                                          "Encrypt=False;TrustServerCertificate=True;Connect Timeout=30;";
+                string? imagePath = pathCmd.ExecuteScalar() as string;
 
-                await using SqlConnection con = new SqlConnection(connectionString);
-                await con.OpenAsync();
-
-                await using SqlTransaction tran = con.BeginTransaction();
-
-                try
+                if (!string.IsNullOrEmpty(imagePath))
                 {
-                    /* ===============================
-                       1️⃣ UPDATE PROPERTY DETAILS
-                    =============================== */
-                    await using (SqlCommand cmd = new SqlCommand(@"
-                UPDATE Properties
-                SET Title = @Title,
-                    Location = @Location,
-                    Price = @Price,
-                    Description = @Description,
-                    LookingFor = @LookingFor,
-                    BHK = @BHK
-                WHERE Id = @Id", con, tran))
-                    {
-                        cmd.Parameters.Add("@Id", SqlDbType.Int).Value = model.PropertyId;
-                        cmd.Parameters.Add("@Title", SqlDbType.NVarChar, 200).Value = model.Title;
-                        cmd.Parameters.Add("@Location", SqlDbType.Int).Value = model.LocationId;   // INT ✅
-                        cmd.Parameters.Add("@Price", SqlDbType.Decimal).Value = model.Price;
-                        cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value = model.Description ?? "";
-                        cmd.Parameters.Add("@LookingFor", SqlDbType.Int).Value = model.LookingFor;
-                        cmd.Parameters.Add("@BHK", SqlDbType.Int).Value = model.BHK;
+                    string fullPath = Path.Combine(
+                        Directory.GetCurrentDirectory(),
+                        "wwwroot",
+                        imagePath.TrimStart('/'));
 
-                        await cmd.ExecuteNonQueryAsync();
-                    }
-
-                    /* ===============================
-                       2️⃣ DELETE MARKED IMAGES
-                    =============================== */
-                    if (model.RemoveImageIds.Any())
-                    {
-                        await using SqlCommand deleteCmd = new SqlCommand(@"
-                    DELETE FROM PropertyImages
-                    WHERE ImageId = @ImageId
-                      AND PropertyId = @PropertyId", con, tran);
-
-                        deleteCmd.Parameters.Add("@ImageId", SqlDbType.Int);
-                        deleteCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                                 .Value = model.PropertyId;
-
-                        foreach (int imageId in model.RemoveImageIds.Distinct())
-                        {
-                            deleteCmd.Parameters["@ImageId"].Value = imageId;
-                            await deleteCmd.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    /* ===============================
-                       3️⃣ INSERT NEW IMAGES
-                    =============================== */
-                    if (model.NewImages.Any())
-                    {
-                        await using SqlCommand insertCmd = new SqlCommand(@"
-                    INSERT INTO PropertyImages (PropertyId, ImageBase64)
-                    VALUES (@PropertyId, @ImageBase64)", con, tran);
-
-                        insertCmd.Parameters.Add("@PropertyId", SqlDbType.Int)
-                                 .Value = model.PropertyId;
-                        insertCmd.Parameters.Add("@ImageBase64", SqlDbType.NVarChar);
-
-                        foreach (var file in model.NewImages)
-                        {
-                            if (file == null || file.Length == 0)
-                                continue;
-
-                            // 2MB safety limit
-                            if (file.Length > 2 * 1024 * 1024)
-                                throw new InvalidOperationException("Image size exceeds 2MB.");
-
-                            await using MemoryStream ms = new MemoryStream();
-                            await file.CopyToAsync(ms);
-
-                            insertCmd.Parameters["@ImageBase64"].Value =
-                                Convert.ToBase64String(ms.ToArray());
-
-                            await insertCmd.ExecuteNonQueryAsync();
-                        }
-                    }
-
-                    await tran.CommitAsync();
-
-                    TempData["PropertyUpdateMessage"] = "Property updated successfully.";
-                    return RedirectToAction("Dashboard", "Admin");
+                    if (System.IO.File.Exists(fullPath))
+                        System.IO.File.Delete(fullPath);
                 }
-                catch
-                {
-                    await tran.RollbackAsync();
-                    throw;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Failed to update property {PropertyId}", model.PropertyId);
 
-                model.ExistingImages = GetPropertyImages(model.PropertyId);
-                ModelState.AddModelError("", "Failed to update property. Please try again.");
+                await using SqlCommand deleteCmd = new SqlCommand(
+                    "DELETE FROM PropertyImages WHERE ImageId=@ImageId AND PropertyId=@PropertyId",
+                    con, tran);
 
-                return View(model);
+                deleteCmd.Parameters.AddWithValue("@ImageId", imageId);
+                deleteCmd.Parameters.AddWithValue("@PropertyId", model.PropertyId);
+
+                await deleteCmd.ExecuteNonQueryAsync();
             }
         }
+/* ===============================
+   REMOVE EXISTING VIDEO (IF CHECKED)
+=============================== */
+if (model.RemoveVideo)
+{
+    // 1️⃣ Get existing video path
+    string getVideoQuery = "SELECT VideoPath FROM Properties WHERE Id = @Id";
+
+    string? existingVideoPath = null;
+
+    using (SqlCommand getCmd = new SqlCommand(getVideoQuery, con, tran))
+    {
+        getCmd.Parameters.AddWithValue("@Id", model.PropertyId);
+        existingVideoPath = getCmd.ExecuteScalar() as string;
+    }
+
+    // 2️⃣ Delete file from disk
+    if (!string.IsNullOrEmpty(existingVideoPath))
+    {
+        string fullVideoPath = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            existingVideoPath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
+        );
+
+        if (System.IO.File.Exists(fullVideoPath))
+        {
+            System.IO.File.Delete(fullVideoPath);
+        }
+    }
+
+    // 3️⃣ Remove DB reference
+    using (SqlCommand clearCmd = new SqlCommand(
+        "UPDATE Properties SET VideoPath = NULL WHERE Id = @Id", con, tran))
+    {
+        clearCmd.Parameters.AddWithValue("@Id", model.PropertyId);
+        await clearCmd.ExecuteNonQueryAsync();
+    }
+}
+        /* ===============================
+           3️⃣ ADD NEW IMAGES (FILE BASED)
+        =============================== */
+        if (model.NewImages.Any())
+        {
+            string imageDir = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "uploads",
+                "properties",
+                model.PropertyId.ToString());
+
+            Directory.CreateDirectory(imageDir);
+
+            foreach (var img in model.NewImages)
+            {
+                if (img == null || img.Length == 0) continue;
+
+                if (img.Length > 5 * 1024 * 1024)
+                    throw new InvalidOperationException("Image exceeds 5MB.");
+
+                string fileName = Guid.NewGuid() + Path.GetExtension(img.FileName);
+                string fullPath = Path.Combine(imageDir, fileName);
+
+                await using (FileStream fs = new FileStream(fullPath, FileMode.Create))
+                {
+                    await img.CopyToAsync(fs);
+                }
+
+                string imagePath = $"/uploads/properties/{model.PropertyId}/{fileName}";
+
+                await using SqlCommand insertImgCmd = new SqlCommand(@"
+                    INSERT INTO PropertyImages (PropertyId, ImagePath)
+                    VALUES (@Pid, @Path)", con, tran);
+
+                insertImgCmd.Parameters.AddWithValue("@Pid", model.PropertyId);
+                insertImgCmd.Parameters.AddWithValue("@Path", imagePath);
+
+                await insertImgCmd.ExecuteNonQueryAsync();
+            }
+        }
+
+        /* ===============================
+           4️⃣ HANDLE VIDEO (KEEP / REPLACE / DELETE)
+        =============================== */
+        string propertyRoot = Path.Combine(
+            Directory.GetCurrentDirectory(),
+            "wwwroot",
+            "uploads",
+            "properties",
+            model.PropertyId.ToString());
+
+        string videoDir = Path.Combine(propertyRoot, "video");
+        Directory.CreateDirectory(videoDir);
+
+        // REMOVE VIDEO
+        if (model.RemoveVideo)
+        {
+            if (!string.IsNullOrEmpty(model.ExistingVideoPath))
+            {
+                string oldVideo = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    model.ExistingVideoPath.TrimStart('/'));
+
+                if (System.IO.File.Exists(oldVideo))
+                    System.IO.File.Delete(oldVideo);
+            }
+
+            await using SqlCommand clearVideoCmd = new SqlCommand(
+                "UPDATE Properties SET VideoPath = NULL WHERE Id = @Id",
+                con, tran);
+
+            clearVideoCmd.Parameters.AddWithValue("@Id", model.PropertyId);
+            await clearVideoCmd.ExecuteNonQueryAsync();
+        }
+
+        // ADD / REPLACE VIDEO
+        if (model.NewVideo != null && model.NewVideo.Length > 0)
+        {
+            if (model.NewVideo.Length > 20 * 1024 * 1024)
+                throw new InvalidOperationException("Video exceeds 20MB.");
+
+            if (!string.IsNullOrEmpty(model.ExistingVideoPath))
+            {
+                string oldVideo = Path.Combine(
+                    Directory.GetCurrentDirectory(),
+                    "wwwroot",
+                    model.ExistingVideoPath.TrimStart('/'));
+
+                if (System.IO.File.Exists(oldVideo))
+                    System.IO.File.Delete(oldVideo);
+            }
+
+            string videoName = "property-video" + Path.GetExtension(model.NewVideo.FileName);
+            string videoFullPath = Path.Combine(videoDir, videoName);
+
+            await using (FileStream fs = new FileStream(videoFullPath, FileMode.Create))
+            {
+                await model.NewVideo.CopyToAsync(fs);
+            }
+
+            string dbVideoPath = $"/uploads/properties/{model.PropertyId}/video/{videoName}";
+
+            await using SqlCommand updateVideoCmd = new SqlCommand(
+                "UPDATE Properties SET VideoPath = @Video WHERE Id = @Id",
+                con, tran);
+
+            updateVideoCmd.Parameters.AddWithValue("@Video", dbVideoPath);
+            updateVideoCmd.Parameters.AddWithValue("@Id", model.PropertyId);
+
+            await updateVideoCmd.ExecuteNonQueryAsync();
+        }
+
+        await tran.CommitAsync();
+
+        TempData["PropertyUpdateMessage"] = "Property updated successfully.";
+        return RedirectToAction("Dashboard", "Admin");
+    }
+    catch (Exception ex)
+    {
+        await tran.RollbackAsync();
+
+        _logger.LogError(ex, "EditProperty failed for PropertyId {Id}", model.PropertyId);
+
+        model.ExistingImages = GetPropertyImages(model.PropertyId);
+        ModelState.AddModelError("", "Failed to update property. Please try again.");
+
+        return View(model);
+    }
+}
+
+
 
         /* ===============================
            HELPER TO GET EXISTING IMAGES
@@ -543,76 +682,85 @@ public IActionResult FilterPartial(string mode)
     return PartialView("_PropertyFilter");
 }
 
-
 public List<PropertyViewModel> GetFilteredProperties(PropertyFilterVM filter)
+{
+    var properties = new List<PropertyViewModel>();
+
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
     {
-        var properties = new Dictionary<int, PropertyViewModel>();
+        string query = @"
+            SELECT
+                p.Id,
+                p.Title,
+                p.Price,
+                p.Description,
+                p.BHK,
+                lm.Id AS LocationId,
+                lm.Location,
+                (
+                    SELECT TOP 1 ImagePath
+                    FROM PropertyImages
+                    WHERE PropertyId = p.Id
+                    ORDER BY ImageId
+                ) AS ImagePath
+            FROM Properties p
+            JOIN LocationMaster lm ON p.Location = lm.Id
+            WHERE p.IsActive = 1
+              AND p.LookingFor = @Mode
+              AND (@LocationId IS NULL OR lm.Id = @LocationId)
+              AND (@BHK IS NULL OR p.BHK = @BHK)
+            ORDER BY p.CreatedDate DESC
+            OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
+        ";
 
-        using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
-                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
-                                      "Password=Ronak0910#;" +
-                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+        SqlCommand cmd = new SqlCommand(query, con);
+
+        cmd.Parameters.AddWithValue("@Mode",
+            filter.Mode == "Buy" ? 2 :
+            filter.Mode == "Rent" ? 1 : 3);
+
+        cmd.Parameters.AddWithValue("@LocationId",
+            (object?)filter.LocationId ?? DBNull.Value);
+
+        cmd.Parameters.AddWithValue("@BHK",
+            (object?)filter.BHK ?? DBNull.Value);
+
+        cmd.Parameters.AddWithValue("@Offset",
+            (filter.Page - 1) * filter.PageSize);
+
+        cmd.Parameters.AddWithValue("@PageSize", filter.PageSize);
+
+        con.Open();
+
+        using (SqlDataReader reader = cmd.ExecuteReader())
         {
-            string query = @"
-                SELECT
-                    p.Id,
-                    p.Title,
-                    p.Price,
-                    p.Description,
-                    p.BHK,
-                    lm.Id AS LocationId,
-                    lm.Location
-                FROM Properties p
-                JOIN LocationMaster lm ON p.Location = lm.Id
-                WHERE p.IsActive = 1
-                  AND p.LookingFor = @Mode
-                  AND (@LocationId IS NULL OR lm.Id = @LocationId)
-                  AND (@BHK IS NULL OR p.BHK = @BHK)
-                ORDER BY p.CreatedDate DESC
-                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
-            ";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-
-            cmd.Parameters.AddWithValue("@Mode", filter.Mode == "Buy" ? 2 :
-                filter.Mode == "Rent" ? 1 : 3);
-            cmd.Parameters.AddWithValue("@LocationId",
-                (object?)filter.LocationId ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@BHK",
-                (object?)filter.BHK ?? DBNull.Value);
-cmd.Parameters.AddWithValue("@Offset",
-    (filter.Page - 1) * filter.PageSize);
-
-cmd.Parameters.AddWithValue("@PageSize", filter.PageSize);
-            con.Open();
-
-            using (SqlDataReader reader = cmd.ExecuteReader())
+            while (reader.Read())
             {
-                while (reader.Read())
+                properties.Add(new PropertyViewModel
                 {
-                    int propertyId = reader.GetInt32(0);
-
-                    properties[propertyId] = new PropertyViewModel
-                    {
-                        PropertyId = propertyId,
-                        Title = reader.GetString(1),
-                        Price = reader.GetDecimal(2),
-                        Description = reader.GetString(3),
-                        BHK = reader.GetInt32(4),
-                        LocationId = reader.GetInt32(5),
-                        Location = reader.GetString(6),
-                        ImagesBase64 = new List<string>()
-                    };
-                }
+                    PropertyId = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Price = reader.GetDecimal(2),
+                    Description = reader.GetString(3),
+                    BHK = reader.GetInt32(4),
+                    LocationId = reader.GetInt32(5),
+                    Location = reader.GetString(6),
+                    ImagePath = reader.IsDBNull(7)
+                        ? "/images/no-image.png"
+                        : reader.GetString(7)
+                });
             }
         }
-
-        // 🔥 Load images separately (PERFORMANCE WIN)
-        LoadImages(properties);
-
-        return properties.Values.ToList();
     }
+
+    return properties;
+}
+
 private int GetTotalPropertyCount(PropertyFilterVM filter)
 {
     using var con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
@@ -644,38 +792,7 @@ private int GetTotalPropertyCount(PropertyFilterVM filter)
     return (int)cmd.ExecuteScalar();
 }
 
-    private void LoadImages(Dictionary<int, PropertyViewModel> properties)
-    {
-        if (!properties.Any()) return;
-
-        using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
-                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
-                                      "Password=Ronak0910#;" +
-                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-        {
-            string query = $@"
-                SELECT PropertyId, ImageBase64
-                FROM PropertyImages
-                WHERE PropertyId IN ({string.Join(",", properties.Keys)})
-            ";
-
-            SqlCommand cmd = new SqlCommand(query, con);
-            con.Open();
-
-            using (SqlDataReader reader = cmd.ExecuteReader())
-            {
-                while (reader.Read())
-                {
-                    int propertyId = reader.GetInt32(0);
-                    string image = reader.GetString(1);
-
-                    if (properties.ContainsKey(propertyId))
-                        properties[propertyId].ImagesBase64.Add(image);
-                }
-            }
-        }
-    }
+    
     
 
 
