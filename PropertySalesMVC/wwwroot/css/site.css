@@ -69,20 +69,35 @@ body {
 /* ================================
    HEADER / NAVBAR
 ================================ */
+
+.site-header .navbar {
+    padding: 0 !important;
+}
 .site-header {
     background: #ffffff;
     border-bottom: 1px solid var(--border-light);
     position: sticky;
     top: 0;
     z-index: 1000;
+    padding: 0 !important;
+}
+.site-header .logo {
+    height: 95px;
+    width: auto;
+    margin: 0;
+    display: block;
 }
 
-.navbar {
-    padding: 16px 0;
-}
 
+.navbar-brand {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
 .navbar-brand .logo {
-    height: 44px;
+    height: 95px;
+    margin-right: 28px;
 }
 
 /* NAV LINKS */
@@ -91,28 +106,33 @@ body {
     font-weight: 500;
     text-decoration: none;
     transition: color 0.2s ease;
+    font-size: 14px;
+    font-weight: 400;
+    color: #3e4655;
+    letter-spacing: 0.3px;
+    transition: color 0.25s ease;
 }
 
 .nav-link:hover {
-    color: var(--brand-primary);
+    color: #1f2f44;
 }
 
 /* ADMIN LOGIN BUTTON */
 .btn-admin-login {
-    background: var(--brand-primary);
-    color: #ffffff;
-    padding: 10px 22px;
+    font-size: 13px;
+    padding: 8px 18px;
     border-radius: 999px;
-    font-weight: 600;
-    text-decoration: none;
-    box-shadow: 0 10px 25px rgba(31, 58, 95, 0.35);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #223a5e;          /* muted navy */
+    color: #fff;
+    box-shadow: none;
+    transition: all 0.25s ease;
 }
 
 .btn-admin-login:hover {
     transform: translateY(-2px);
     box-shadow: 0 16px 35px rgba(31, 58, 95, 0.45);
     color: #ffffff;
+    background: #182c45;
 }
 
 /* ================================

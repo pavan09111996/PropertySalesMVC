@@ -26,12 +26,13 @@
                     {
                         foreach (var img in property.ImagesBase64)
                         {
-                            <img src="data:image/jpeg;base64,@img" />
-                        }
+<img src="/Admin/PropertyImage?propertyId=@property.PropertyId"
+     class="property-thumb"
+     loading="lazy" />                        }
                     }
                     else
                     {
-                        <img src="~/images/no-image.png" />
+                        <img src="~/images/no-image.png" loading="lazy"/>
                     }
                 </div>
 

@@ -1,0 +1,42 @@
+@{
+    int? selectedLocation = ViewBag.SelectedLocation as int?;
+    int? selectedBHK = ViewBag.SelectedBHK as int?;
+}
+
+<div class="listing-filter rf-filter">
+    <form id="filterForm" class="rf-form">
+
+
+        <div class="rf-group">
+            <label class="rf-label">Location</label>
+            <select name="locationId" class="rf-select">
+                <option value="">All Locations</option>
+
+               @if (ViewBag.Locations != null)
+{
+    foreach (var loc in ViewBag.Locations)
+    {
+        <option value="@loc.Id">@loc.Location</option>
+    }
+}
+
+            </select>
+        </div>
+
+        <div class="rf-group">
+            <label class="rf-label">BHK</label>
+            <select name="bhk" class="rf-select">
+                <option value="">Any BHK</option>
+                @for (int i = 1; i <= 4; i++)
+                {
+                    <option value="@i">@i BHK</option>
+                }
+            </select>
+        </div>
+
+        <button type="button" class="rf-btn" onclick="applyFilters()">
+            Apply Filters
+        </button>
+
+    </form>
+</div>

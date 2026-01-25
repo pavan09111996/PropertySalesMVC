@@ -1,6 +1,4 @@
-﻿@model List<PropertyViewModel>
-
-@{
+﻿@{
     ViewData["Title"] = "Ronak Estate - Find Your Dream Home";
 }
 
@@ -8,145 +6,197 @@
     <link rel="stylesheet" href="~/css/landing.css" />
 }
 
-<!-- HERO SECTION WITH VIDEO -->
 <section class="hero hero-video">
 
-    <!-- Background Video -->
     <video class="hero-bg-video"
-           autoplay
-           muted
-           loop
-           playsinline
-           preload="metadata"
+           autoplay muted loop playsinline preload="metadata"
            poster="/images/hero-fallback.jpg">
         <source src="/videos/realestate-timelapse.mp4" type="video/mp4" />
-        <!-- Fallback text -->
     </video>
 
-    <!-- Dark Overlay -->
     <div class="hero-overlay"></div>
 
-    <!-- Content -->
     <div class="hero-content">
-          
-        <h1>Your Trusted Partner in  <span class="gold-accent">Buying, Selling & Renting</span> Properties</h1>
-        <p>Buy, Sell & Rent Exceptional Properties with Confidence</p>
 
-        <a href="#properties" class="btn-primary">
-            Browse Properties
-        </a>
-    </div>
+        <h1 id="mainHeading">
+            Find Your Place. <span class="gold-accent">Live Better.</span>
+        </h1>
 
-</section>
+        <div class="hero-switch">
+            <button onclick="loadProperties('Buy', this)">Buy</button>
+            <button onclick="loadProperties('Rent', this)">Rent</button>
+            <button onclick="loadSell()">Sell</button>
+        </div>
 
-
-<!-- PROPERTIES -->
-<section id="properties" class="properties-section">
-
-    <h2 class="section-title">Featured Properties</h2>
-
-    <div class="property-grid">
-
-        @foreach (var property in Model)
-        {
-            <div class="property-card">
-
-                <!-- IMAGE SECTION -->
-                <div class="property-image"
-                data-image-count="@(property.ImagesBase64?.Count ?? 0)">
-
-
-                    <!-- FEATURED BADGE (optional now, future ready) -->
-                    <span class="featured-badge">Featured</span>
-
-                    <!-- LEFT ARROW -->
-                    <button class="nav-arrow left"
-                            type="button"
-                            onclick="scrollImages(this, -1)">
-                        ❮
-                    </button>
-
-                    <!-- IMAGE STRIP -->
-                    <div class="image-strip">
-                        @if (property.ImagesBase64?.Any() == true)
-                        {
-                            foreach (var img in property.ImagesBase64)
-                            {
-                                <img src="data:image/jpeg;base64,@img" alt="Property Image" />
-                            }
-                        }
-                        else
-                        {
-                            <img src="~/images/no-image.png" alt="No Image" />
-                        }
-                    </div>
-
-                    <!-- RIGHT ARROW -->
-                    <button class="nav-arrow right"
-                            type="button"
-                            onclick="scrollImages(this, 1)">
-                        ❯
-                    </button>
-
-                </div>
-
-                <!-- BODY -->
-                <div class="property-body">
-
-                    <h3 class="property-title">@property.Title</h3>
-
-                    <p class="property-location">📍 @property.Location</p>
-
-                    <div class="property-price">
-                        ₹ @property.Price.ToString("N0")
-                    </div>
-
-                    <p class="property-desc">
-                        @(property.Description.Length > 90
-                            ? property.Description.Substring(0, 90) + "..."
-                            : property.Description)
-                    </p>
-
-                    <div class="property-footer">
-                        <a href="@Url.Action("PropertyDetails", "Property", new { id = property.PropertyId })"
-                           class="btn-primary">
-                            View Details
-                        </a>
-                    </div>
-
-                </div>
-
-            </div>
-        }
+        <p id="modeSubText">
+            Buy, rent, or sell premium properties with confidence
+        </p>
 
     </div>
 </section>
+
+<!-- FILTER -->
+<div id="filterContainer"></div>
+
+<!-- LOADER -->
+<div id="propertyLoader" class="property-loader" style="display:none;">
+    <div class="spinner"></div>
+    <p>Loading properties...</p>
+</div>
+
+<!-- CONTENT -->
+<div id="contentAnchor"></div>
+
+<section id="propertyContainer"></section>
 
 @section Scripts {
-    <script>
-        function scrollImages(button, direction) {
-            const wrapper = button.closest('.property-image');
-            const strip = wrapper.querySelector('.image-strip');
-            const img = strip.querySelector('img');
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-            if (!img) return;
+<script>
+    var currentMode = null;
+    var currentPage = 1;
 
-            const scrollAmount = img.clientWidth;
+    function loadProperties(mode, el) {
 
-            strip.scrollBy({
-                left: direction * scrollAmount,
-                behavior: 'smooth'
+        currentMode = mode;
+        currentPage = 1;
+
+        $('#mainHeading').html(
+            'Explore Properties for <span class="gold-accent">' + mode + '</span>'
+        );
+
+        $('#modeSubText').text(
+            'Handpicked premium properties available for ' + mode.toLowerCase()
+        );
+
+        $('.hero-switch button').removeClass('active');
+        el.classList.add('active');
+
+        $('#filterContainer').show();
+        $('#propertyContainer').empty();
+        $('#propertyLoader').show();
+
+        // ✅ Load filter ONLY into filterContainer
+        $.get('/Property/FilterPartial', { mode: mode })
+            .done(function (html) {
+                $('#filterContainer').html(html);
             });
-        }
-        document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".property-image").forEach(container => {
-            const imageCount = parseInt(container.dataset.imageCount || "0");
 
-            if (imageCount <= 1) {
-                const arrows = container.querySelectorAll(".nav-arrow");
-                arrows.forEach(a => a.style.display = "none");
+        // ✅ Load listings
+        $.ajax({
+            url: '/Property/ListingPartial',
+            type: 'GET',
+            data: {
+                mode: currentMode,
+                page: currentPage
             }
+        })
+        .done(function (html) {
+            $('#propertyContainer').html(html);
+            scrollToContent();
+        })
+        .always(function () {
+            $('#propertyLoader').hide();
         });
+    }
+
+    function applyFilters() {
+
+        currentPage = 1;
+
+        let data = {
+            mode: currentMode,
+            page: currentPage
+        };
+
+        if ($('#filterForm').length) {
+            $('#filterForm').serializeArray()
+                .forEach(x => data[x.name] = x.value);
+        }
+
+        $('#propertyContainer').empty();
+        $('#propertyLoader').show();
+
+        $.ajax({
+            url: '/Property/ListingPartial',
+            type: 'GET',
+            data: data
+        })
+        .done(function (html) {
+            $('#propertyContainer').html(html);
+            scrollToContent();
+        })
+        .always(function () {
+            $('#propertyLoader').hide();
+        });
+    }
+
+    function changePage(page) {
+
+        if (!currentMode || page < 1) return;
+
+        currentPage = page;
+
+        let data = {
+            mode: currentMode,
+            page: currentPage
+        };
+
+        if ($('#filterForm').length) {
+            $('#filterForm').serializeArray()
+                .forEach(x => data[x.name] = x.value);
+        }
+
+        $('#propertyContainer').empty();
+        $('#propertyLoader').show();
+
+        $.ajax({
+            url: '/Property/ListingPartial',
+            type: 'GET',
+            data: data
+        })
+        .done(function (html) {
+            $('#propertyContainer').html(html);
+            scrollToContent();
+        })
+        .always(function () {
+            $('#propertyLoader').hide();
+        });
+    }
+
+    function loadSell() {
+
+        $('.hero-switch button').removeClass('active');
+        $('.hero-switch button:last-child').addClass('active');
+
+        $('#filterContainer').hide();
+
+        $('#mainHeading').html(
+            'Submit Property for <span class="gold-accent">Sale</span>'
+        );
+
+        $('#modeSubText').text(
+            'Share your property details and we will contact you'
+        );
+
+        $('#propertyContainer').load('/Property/SalePartial', function () {
+            scrollToContent(); // ✅ FIX
+        });
+    }
+
+    function scrollToContent() {
+
+    const anchor = document.getElementById("contentAnchor");
+    if (!anchor) return;
+
+    const yOffset = -20; // small breathing space (adjust if needed)
+    const y = anchor.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+    window.scrollTo({
+        top: y,
+        behavior: "smooth"
     });
-    </script>
+}
+
+</script>
 }

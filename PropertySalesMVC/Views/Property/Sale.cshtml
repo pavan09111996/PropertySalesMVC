@@ -1,38 +1,20 @@
 ﻿@{
     ViewData["Title"] = "Sell Property - Ronak Estate";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@section Styles {
-    <link rel="stylesheet" href="~/css/landing.css" />
-}
+<link rel="stylesheet" href="~/css/landing.css" />
 
-<!-- HERO -->
-<section class="hero hero-video">
-    <div class="hero-overlay"></div>
-    <div class="hero-content">
-        <h1>
-            Sell Your <span class="gold-accent">Property</span>
-        </h1>
-        <p>List your property for sale with Ronak Estate</p>
-    </div>
-</section>
-
-<!-- FORM SECTION -->
 <section class="properties-section">
     <h2 class="section-title">Submit Property for Sale</h2>
 
-    <div class="container" style="max-width: 700px;">
+    <div class="container" style="max-width:700px;">
+        <form id="saleForm" class="card p-4 shadow-sm" autocomplete="off">
 
-        <form id="saleForm" class="card p-4 shadow-sm">
-
-            <!-- Property Title -->
             <div class="mb-3">
                 <label class="form-label">Property Title</label>
                 <input type="text" class="form-control" name="Title" required />
             </div>
 
-            <!-- BHK -->
             <div class="mb-3">
                 <label class="form-label">BHK</label>
                 <select class="form-select" name="BHK" required>
@@ -44,7 +26,6 @@
                 </select>
             </div>
 
-            <!-- Location -->
             <div class="mb-3">
                 <label class="form-label">Location</label>
                 <select class="form-select" name="Location" required>
@@ -56,68 +37,64 @@
                 </select>
             </div>
 
-            <!-- Expected Price -->
             <div class="mb-3">
                 <label class="form-label">Expected Price</label>
-                <input type="number" class="form-control" name="Price" min="0" required />
+                <input type="number" class="form-control" name="Price" required />
             </div>
 
-            <!-- Description -->
             <div class="mb-3">
                 <label class="form-label">Description</label>
                 <textarea class="form-control" name="Description" rows="4" required></textarea>
             </div>
 
-            
+            <button type="button"
+                    class="btn-primary w-100"
+                    onclick="submitSaleForm()">
+                Submit Property
+            </button>
 
-            <!-- Hidden LookingFor -->
-            <input type="hidden" name="LookingFor" value="Sale" />
-
-            <button type="submit" class="btn-primary w-100">Submit Property</button>
         </form>
     </div>
 </section>
 
-@section Scripts {
-    <script>
-                const form = document.getElementById("saleForm");
+<script>
+function submitSaleForm() {
 
-                form.addEventListener("submit", function (e) {
-                    e.preventDefault(); // Prevent default form submission
+    const form = document.getElementById("saleForm");
+    const data = new FormData(form);
 
-                    const formData = new FormData(form);
-                    const title = formData.get("Title");
-                    const location = formData.get("Location");
-                    const bhk = formData.get("BHK");
-                    const price = formData.get("Price");
+    const title = data.get("Title");
+    const location = data.get("Location");
+    const bhk = data.get("BHK");
+    const price = data.get("Price");
 
-                    const locationName = {
-                        "1": "Borivali",
-                        "2": "Kandivali",
-                        "3": "Goregaon",
-                        "4": "Malad"
-                    }[location] || "Unknown";
+    if (!title || !location || !bhk || !price) {
+        alert("Please fill all required fields.");
+        return;
+    }
 
-                    const message = `Hello Ronak Estate 👋
-        I would like to sell my property 🏠
+    const locationName = {
+        "1": "Borivali",
+        "2": "Kandivali",
+        "3": "Goregaon",
+        "4": "Malad"
+    }[location] || "Unknown";
 
-        Property Details
-        Title: ${title}
-        Location: ${locationName}
-        BHK: ${bhk}
-        Expected Price: ₹${parseInt(price).toLocaleString()}
+    const message = `Hello Ronak Estate 👋
+I would like to sell my property 🏠
 
-        Please contact me for further discussion.
-        Thank you 🙂`;
+Property Details
+Title: ${title}
+Location: ${locationName}
+BHK: ${bhk}
+Expected Price: ₹${parseInt(price).toLocaleString()}
 
-                    const phoneNumber = "919594774795";
-                    const url = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+Please contact me for further discussion.
+Thank you 🙂`;
 
-                    // Open WhatsApp in a new tab
-                    window.open(url, "_blank");
+    const url = "https://wa.me/919594774795?text=" + encodeURIComponent(message);
 
-                    // Reset the form
-                    form.reset();
-                });
-    </script>
+    window.open(url, "_blank");
+    form.reset();
 }
+</script>

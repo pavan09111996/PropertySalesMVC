@@ -28,6 +28,7 @@ namespace PropertySalesMVC.Models
         public decimal Price { get; set; }
         public string Description { get; set; }
         public int BHK { get; set; }
+        public int? LocationId { get; set; }
 
         public List<string> ImagesBase64 { get; set; } = new();
     }
@@ -103,5 +104,24 @@ namespace PropertySalesMVC.Models
         public string Id { get; set; }
         public string Location { get; set; }
     }
+    public enum PropertyMode
+{
+    Buy = 1,
+    Rent = 2,
+    Sell = 3
+}
+
+
+public class PropertyFilterVM
+{
+    public string Mode { get; set; }      // Buy / Rent
+    public int? LocationId { get; set; }  // nullable
+    public int? BHK { get; set; }          // nullable
+    // 🔥 Pagination
+    public int Page { get; set; } = 1;
+    public int PageSize { get; set; } = 9;
+}
+
+
 
 }

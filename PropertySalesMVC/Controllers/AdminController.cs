@@ -63,64 +63,55 @@ namespace PropertySalesMVC.Controllers
 
 
         [AdminAuthorize]
-        public IActionResult Dashboard()
+public IActionResult Dashboard()
+{
+    var properties = new List<PropertyViewModel>();
+
+    using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+    {
+        string query = @"
+        SELECT 
+            p.Id,
+            p.Title,
+            ISNULL(lm.Location,'') AS Location,
+            p.Price,
+            p.Description,
+            (
+                SELECT TOP 1 ImageBase64
+                FROM PropertyImages
+                WHERE PropertyId = p.Id
+                ORDER BY p.Id
+            ) AS ImageBase64
+        FROM Properties p
+        LEFT JOIN LocationMaster lm ON p.Location = lm.Id
+        WHERE p.IsActive = 1";
+
+        SqlCommand cmd = new SqlCommand(query, con);
+        con.Open();
+
+        using (SqlDataReader reader = cmd.ExecuteReader())
         {
-            var properties = new Dictionary<int, PropertyViewModel>();
-
-            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+            while (reader.Read())
             {
-                string query = @"
-                SELECT 
-                p.Id,
-                p.Title,
-                isnull(lm.Location,'') as Location,
-                p.Price,
-                p.Description,
-                im.ImageBase64
-                FROM Properties p
-                LEFT JOIN PropertyImages im
-                ON p.Id = im.PropertyId
-                LEFT JOIN LocationMaster Lm
-                on P.Location = lm.Id
-                where p.IsActive = 1
-                 ";
-
-                SqlCommand cmd = new SqlCommand(query, con);
-                con.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
+                properties.Add(new PropertyViewModel
                 {
-                    while (reader.Read())
-                    {
-                        int propertyId = reader.GetInt32(0);
-
-                        // Create parent once
-                        if (!properties.ContainsKey(propertyId))
-                        {
-                            properties[propertyId] = new PropertyViewModel
-                            {
-                                PropertyId = propertyId,
-                                Title = reader.GetString(1),
-                                Location = reader.GetString(2),
-                                Price = reader.GetDecimal(3),
-                                Description = reader.GetString(4)
-                            };
-                        }
-
-                        // Add images (can be null because of LEFT JOIN)
-                        if (!reader.IsDBNull(5))
-                        {
-                            properties[propertyId]
-                                .ImagesBase64
-                                .Add(reader.GetString(5));
-                        }
-                    }
-                }
+                    PropertyId = reader.GetInt32(0),
+                    Title = reader.GetString(1),
+                    Location = reader.GetString(2),
+                    Price = reader.GetDecimal(3),
+                    Description = reader.GetString(4),
+                    ImagesBase64 = reader.IsDBNull(5)
+                        ? new List<string>()
+                        : new List<string> { reader.GetString(5) }
+                });
             }
-            var propertyCount = properties.Count;
-            ViewBag.PropertyCount = propertyCount;
-            return View(properties.Values.ToList());
         }
+    }
+
+    ViewBag.PropertyCount = properties.Count;
+    return View(properties);
+}
+
 
         [HttpGet]
         [AdminAuthorize]
@@ -262,5 +253,42 @@ namespace PropertySalesMVC.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        [ResponseCache(Duration = 60 * 60)] // 1 hour cache
+public IActionResult PropertyImage(int propertyId)
+{
+    using (SqlConnection con = new SqlConnection(
+        "Data Source=SQL6031.site4now.net,1433;" +
+        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+        "User ID=db_ac36b8_ronakrealestate00_admin;" +
+        "Password=Ronak0910#;" +
+        "Encrypt=False;TrustServerCertificate=True;"))
+    {
+        string query = @"
+            SELECT TOP 1 ImageBase64
+            FROM PropertyImages
+            WHERE PropertyId = @PropertyId
+        ";
+
+        SqlCommand cmd = new SqlCommand(query, con);
+        cmd.Parameters.AddWithValue("@PropertyId", propertyId);
+
+        con.Open();
+        var result = cmd.ExecuteScalar();
+
+        if (result == null)
+        {
+            return PhysicalFile(
+                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/no-image.png"),
+                "image/png");
+        }
+
+        byte[] bytes = Convert.FromBase64String(result.ToString());
+        return File(bytes, "image/jpeg");
+    }
+}
+
+
+
     }
 }

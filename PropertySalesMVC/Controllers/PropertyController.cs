@@ -62,7 +62,7 @@ namespace PropertySalesMVC.Controllers
 
                 // PROPERTY
                 string propertyQuery = @"
-                    SELECT p.Id, p.Title, isnull(lm.Location,'') as Location, p.Price, p.Description
+                    SELECT p.Id, p.Title, isnull(lm.Location,'') as Location, p.Price, p.Description,p.bhk 
                     FROM Properties p
                     LEFT JOIN LocationMaster lm
                     on p.Location = lm.id
@@ -82,6 +82,7 @@ namespace PropertySalesMVC.Controllers
                     model.Location = dr.GetString(2);
                     model.Price = dr.GetDecimal(3);
                     model.Description = dr.GetString(4);
+                    model.BHK = dr.GetInt32(5);
                 }
 
                 // IMAGES
@@ -422,198 +423,7 @@ namespace PropertySalesMVC.Controllers
 
 
 
-        [HttpGet]
-        public IActionResult Buy()
-        {
-            var properties = new Dictionary<int, PropertyViewModel>();
 
-
-            string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
-                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
-                                      "Password=Ronak0910#;" +
-                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;";
-
-            using (SqlConnection con = new SqlConnection(connectionString))
-            {
-                string query = @"
-            SELECT 
-                p.Id,
-                p.Title,
-                ISNULL(lm.Location,'') AS Location,
-                p.Price,
-                p.Description,
-                i.ImageBase64
-            FROM Properties p
-            LEFT JOIN PropertyImages i ON p.Id = i.PropertyId
-            LEFT JOIN LocationMaster lm ON p.Location = lm.Id
-            WHERE p.IsActive = 1 AND LookingFor = 1
-            ORDER BY p.Id";
-
-                using SqlCommand cmd = new SqlCommand(query, con);
-                con.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        int propertyId = reader.GetInt32(0);
-
-                        // Create property only once
-                        if (!properties.ContainsKey(propertyId))
-                        {
-                            properties[propertyId] = new PropertyViewModel
-                            {
-                                PropertyId = propertyId,
-                                Title = reader.GetString(1),
-                                Location = reader.GetString(2),
-                                Price = reader.GetDecimal(3),
-                                Description = reader.GetString(4),
-                                ImagesBase64 = new List<string>()
-                            };
-                        }
-
-                        // Add image if exists
-                        if (!reader.IsDBNull(5))
-                        {
-                            properties[propertyId].ImagesBase64.Add(reader.GetString(5));
-                        }
-                    }
-                }
-            }
-
-            ViewBag.PropertyCount = properties.Count;
-
-            // Load admin details
-            var adminDetails = GetAdminDetails();
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
-
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
-
-            return View(properties.Values.ToList());
-        }
-
-
-
-
-        [HttpGet]
-        public IActionResult Rent()
-        {
-            var properties = new Dictionary<int, PropertyViewModel>();
-
-
-            string connectionString = "Data Source=SQL6031.site4now.net,1433;" +
-                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
-                                      "Password=Ronak0910#;" +
-                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;";
-
-            using (SqlConnection con = new SqlConnection(connectionString))
-            {
-                string query = @"
-            SELECT 
-                p.Id,
-                p.Title,
-                ISNULL(lm.Location,'') AS Location,
-                p.Price,
-                p.Description,
-                i.ImageBase64
-            FROM Properties p
-            LEFT JOIN PropertyImages i ON p.Id = i.PropertyId
-            LEFT JOIN LocationMaster lm ON p.Location = lm.Id
-            WHERE p.IsActive = 1 AND LookingFor = 2
-            ORDER BY p.Id";
-
-                using SqlCommand cmd = new SqlCommand(query, con);
-                con.Open();
-
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        int propertyId = reader.GetInt32(0);
-
-                        // Create property only once
-                        if (!properties.ContainsKey(propertyId))
-                        {
-                            properties[propertyId] = new PropertyViewModel
-                            {
-                                PropertyId = propertyId,
-                                Title = reader.GetString(1),
-                                Location = reader.GetString(2),
-                                Price = reader.GetDecimal(3),
-                                Description = reader.GetString(4),
-                                ImagesBase64 = new List<string>()
-                            };
-                        }
-
-                        // Add image if exists
-                        if (!reader.IsDBNull(5))
-                        {
-                            properties[propertyId].ImagesBase64.Add(reader.GetString(5));
-                        }
-                    }
-                }
-            }
-
-            ViewBag.PropertyCount = properties.Count;
-
-            // Load admin details
-            var adminDetails = GetAdminDetails();
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
-
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
-
-            return View(properties.Values.ToList());
-        }
-
-        [HttpGet]
-        public IActionResult Sale()
-        {
-            var LocationDetails = GetLocations();
-            ViewBag.Locations = LocationDetails;
-            var adminDetails = GetAdminDetails();
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
-
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
-            return View("Sale");
-        }
 
 
         public List<LocationMasterNew> GetLocations()
@@ -653,6 +463,245 @@ namespace PropertySalesMVC.Controllers
 
 
 
+
+        
+
+public IActionResult Listing(PropertyFilterVM filter)
+{
+    // default mode
+    filter.Mode ??= "Rent";
+
+    var properties = GetFilteredProperties(filter);
+
+    ViewBag.Mode = filter.Mode;
+    ViewBag.Locations = GetLocations(); // dropdown
+    ViewBag.SelectedLocation = filter.LocationId;
+    ViewBag.SelectedBHK = filter.BHK;
+
+    return View(properties);
+}
+
+
+public IActionResult Rent(int? locationId, int? bhk)
+{
+    return Listing(new PropertyFilterVM
+    {
+        Mode = "Rent",
+        LocationId = locationId,
+        BHK = bhk
+    });
+}
+
+public IActionResult Buy(int? locationId, int? bhk)
+{
+    return Listing(new PropertyFilterVM
+    {
+        Mode = "Buy",
+        LocationId = locationId,
+        BHK = bhk
+    });
+}
+
+public IActionResult Sell(int? locationId, int? bhk)
+{
+    return Listing(new PropertyFilterVM
+    {
+        Mode = "Sell",
+        LocationId = locationId,
+        BHK = bhk
+    });
+}
+
+
+
+[HttpGet]
+public IActionResult ListingPartial(PropertyFilterVM filter)
+{
+    filter.Mode ??= "Rent";
+
+    // 🔥 FORCE Page + PageSize
+    filter.Page = filter.Page <= 0 ? 1 : filter.Page;
+    filter.PageSize = filter.PageSize <= 0 ? 9 : filter.PageSize;
+
+    var properties = GetFilteredProperties(filter);
+    var totalCount = GetTotalPropertyCount(filter);
+
+    ViewBag.CurrentPage = filter.Page;
+    ViewBag.TotalPages =
+        (int)Math.Ceiling(totalCount / (double)filter.PageSize);
+
+    return PartialView("_PropertyGridWithPagination", properties);
+}
+
+
+
+public IActionResult FilterPartial(string mode)
+{
+    ViewBag.Locations = GetLocations();
+    ViewBag.Mode = mode;
+
+    return PartialView("_PropertyFilter");
+}
+
+
+public List<PropertyViewModel> GetFilteredProperties(PropertyFilterVM filter)
+    {
+        var properties = new Dictionary<int, PropertyViewModel>();
+
+        using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
+                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                      "Password=Ronak0910#;" +
+                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+        {
+            string query = @"
+                SELECT
+                    p.Id,
+                    p.Title,
+                    p.Price,
+                    p.Description,
+                    p.BHK,
+                    lm.Id AS LocationId,
+                    lm.Location
+                FROM Properties p
+                JOIN LocationMaster lm ON p.Location = lm.Id
+                WHERE p.IsActive = 1
+                  AND p.LookingFor = @Mode
+                  AND (@LocationId IS NULL OR lm.Id = @LocationId)
+                  AND (@BHK IS NULL OR p.BHK = @BHK)
+                ORDER BY p.CreatedDate DESC
+                OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY
+            ";
+
+            SqlCommand cmd = new SqlCommand(query, con);
+
+            cmd.Parameters.AddWithValue("@Mode", filter.Mode == "Buy" ? 2 :
+                filter.Mode == "Rent" ? 1 : 3);
+            cmd.Parameters.AddWithValue("@LocationId",
+                (object?)filter.LocationId ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@BHK",
+                (object?)filter.BHK ?? DBNull.Value);
+cmd.Parameters.AddWithValue("@Offset",
+    (filter.Page - 1) * filter.PageSize);
+
+cmd.Parameters.AddWithValue("@PageSize", filter.PageSize);
+            con.Open();
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int propertyId = reader.GetInt32(0);
+
+                    properties[propertyId] = new PropertyViewModel
+                    {
+                        PropertyId = propertyId,
+                        Title = reader.GetString(1),
+                        Price = reader.GetDecimal(2),
+                        Description = reader.GetString(3),
+                        BHK = reader.GetInt32(4),
+                        LocationId = reader.GetInt32(5),
+                        Location = reader.GetString(6),
+                        ImagesBase64 = new List<string>()
+                    };
+                }
+            }
+        }
+
+        // 🔥 Load images separately (PERFORMANCE WIN)
+        LoadImages(properties);
+
+        return properties.Values.ToList();
+    }
+private int GetTotalPropertyCount(PropertyFilterVM filter)
+{
+    using var con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
+                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                      "Password=Ronak0910#;" +
+                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
+
+    string query = @"
+        SELECT COUNT(*)
+        FROM Properties p
+        JOIN LocationMaster lm ON p.Location = lm.Id
+        WHERE p.IsActive = 1
+          AND p.LookingFor = @Mode
+          AND (@LocationId IS NULL OR lm.Id = @LocationId)
+          AND (@BHK IS NULL OR p.BHK = @BHK)
+    ";
+
+    var cmd = new SqlCommand(query, con);
+
+    cmd.Parameters.AddWithValue("@Mode", filter.Mode == "Buy" ? 2 :
+        filter.Mode == "Rent" ? 1 : 3);
+    cmd.Parameters.AddWithValue("@LocationId",
+        (object?)filter.LocationId ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("@BHK",
+        (object?)filter.BHK ?? DBNull.Value);
+
+    con.Open();
+    return (int)cmd.ExecuteScalar();
+}
+
+    private void LoadImages(Dictionary<int, PropertyViewModel> properties)
+    {
+        if (!properties.Any()) return;
+
+        using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;" +
+                                      "Initial Catalog=db_ac36b8_ronakrealestate00;" +
+                                      "User ID=db_ac36b8_ronakrealestate00_admin;" +
+                                      "Password=Ronak0910#;" +
+                                      "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+        {
+            string query = $@"
+                SELECT PropertyId, ImageBase64
+                FROM PropertyImages
+                WHERE PropertyId IN ({string.Join(",", properties.Keys)})
+            ";
+
+            SqlCommand cmd = new SqlCommand(query, con);
+            con.Open();
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    int propertyId = reader.GetInt32(0);
+                    string image = reader.GetString(1);
+
+                    if (properties.ContainsKey(propertyId))
+                        properties[propertyId].ImagesBase64.Add(image);
+                }
+            }
+        }
+    }
+    
+
+
+        [HttpGet]
+        public IActionResult Sale()
+        {
+            var LocationDetails = GetLocations();
+            ViewBag.Locations = LocationDetails;
+            var adminDetails = GetAdminDetails();
+            if (adminDetails != null)
+            {
+                ViewBag.CompanyName = adminDetails.CompanyName;
+                ViewBag.OwnerName = adminDetails.OwnerName;
+                ViewBag.Designation = adminDetails.Designation;
+
+                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+
+                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+
+                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+            }
+            return View("Sale");
+        }
 
         [HttpPost]
         public IActionResult Sale(PropertyViewModel model)
@@ -699,7 +748,28 @@ namespace PropertySalesMVC.Controllers
             return Redirect($"https://wa.me/{phoneNumber}?text={message}");
         }
 
+        [HttpGet]
+public IActionResult SalePartial()
+{
+    var LocationDetails = GetLocations();
+    ViewBag.Locations = LocationDetails;
 
+    var adminDetails = GetAdminDetails();
+    if (adminDetails != null)
+    {
+        ViewBag.CompanyName = adminDetails.CompanyName;
+        ViewBag.OwnerName = adminDetails.OwnerName;
+        ViewBag.Designation = adminDetails.Designation;
+        ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+        ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
+        ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+        ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
+        ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+        ViewBag.FacebookUrl = adminDetails.FacebookUrl;
+    }
+
+    return PartialView("Sale");
+}
 
     }
 }

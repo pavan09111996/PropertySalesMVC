@@ -1,0 +1,17 @@
+@model List<PropertyViewModel>
+
+@if (Model != null && Model.Any())
+{
+    <div class="property-grid">
+        @foreach (var property in Model)
+        {
+            <partial name="_PropertyCard" model="property" />
+        }
+    </div>
+}
+else
+{
+    <p class="text-muted text-center mt-5">
+        No properties found.
+    </p>
+}

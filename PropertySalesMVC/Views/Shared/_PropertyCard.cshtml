@@ -1,0 +1,60 @@
+@model PropertyViewModel
+
+<div class="property-card">
+
+    <!-- IMAGE -->
+    <div class="property-image"
+         data-image-count="@(Model.ImagesBase64?.Count ?? 0)">
+
+        <span class="featured-badge">Featured</span>
+
+        <div class="image-strip">
+            @if (Model.ImagesBase64 != null && Model.ImagesBase64.Any())
+            {
+                foreach (var img in Model.ImagesBase64)
+                {
+                    <img src="data:image/jpeg;base64,@img"
+                         alt="@Model.Title"
+                         loading="lazy" />
+                }
+            }
+            else
+            {
+                <img src="~/images/no-image.png"
+                     alt="No Image"
+                     loading="lazy" />
+            }
+        </div>
+    </div>
+
+    <!-- BODY -->
+    <div class="property-body">
+
+        <h3 class="property-title">
+            @Model.Title
+        </h3>
+
+        <p class="property-location">
+            📍 @Model.Location
+        </p>
+
+        <div class="property-price">
+            ₹ @Model.Price.ToString("N0")
+        </div>
+
+        <p class="property-desc">
+            @(Model.Description?.Length > 90
+                ? Model.Description.Substring(0, 90) + "..."
+                : Model.Description)
+        </p>
+
+        <div class="property-footer">
+            <a href="@Url.Action("PropertyDetails", "Property", new { id = Model.PropertyId })"
+               class="btn-primary">
+                View Details
+            </a>
+        </div>
+
+    </div>
+
+</div>

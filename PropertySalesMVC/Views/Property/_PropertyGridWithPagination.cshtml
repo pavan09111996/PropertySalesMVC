@@ -1,0 +1,54 @@
+@model List<PropertyViewModel>
+
+@await Html.PartialAsync("_PropertyGrid", Model)
+
+@if (ViewBag.TotalPages > 1)
+{
+    <div class="pagination">
+
+        @* PREV *@
+        @if (ViewBag.CurrentPage > 1)
+        {
+            <button class="page-btn"
+                    onclick="changePage(@(ViewBag.CurrentPage - 1))">
+                Prev
+            </button>
+        }
+        else
+        {
+            <button class="page-btn" disabled>Prev</button>
+        }
+
+        @* PAGE NUMBERS *@
+        @for (int i = 1; i <= ViewBag.TotalPages; i++)
+        {
+            if (i == ViewBag.CurrentPage)
+            {
+                <button class="page-btn active" disabled>
+                    @i
+                </button>
+            }
+            else
+            {
+                <button class="page-btn"
+                        onclick="changePage(@i)">
+                    @i
+                </button>
+            }
+        }
+
+        @* NEXT *@
+        @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+        {
+            <button class="page-btn"
+                    onclick="changePage(@(ViewBag.CurrentPage + 1))">
+                Next
+            </button>
+        }
+        else
+        {
+            <button class="page-btn" disabled>Next</button>
+        }
+
+    </div>
+}
