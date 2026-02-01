@@ -11,7 +11,7 @@
         <form id="saleForm" class="card p-4 shadow-sm" autocomplete="off">
 
             <div class="mb-3">
-                <label class="form-label">Property Title</label>
+                <label class="form-label">Address of the property</label>
                 <input type="text" class="form-control" name="Title" required />
             </div>
 
@@ -26,7 +26,7 @@
                 </select>
             </div>
 
-            <div class="mb-3">
+            @* <div class="mb-3">
                 <label class="form-label">Location</label>
                 <select class="form-select" name="Location" required>
                     <option value="">-- Select Location --</option>
@@ -35,7 +35,7 @@
                         <option value="@loc.Id">@loc.Location</option>
                     }
                 </select>
-            </div>
+            </div> *@
 
             <div class="mb-3">
                 <label class="form-label">Expected Price</label>
@@ -64,35 +64,27 @@ function submitSaleForm() {
     const data = new FormData(form);
 
     const title = data.get("Title");
-    const location = data.get("Location");
+    //const location = data.get("Location");
     const bhk = data.get("BHK");
     const price = data.get("Price");
 
-    if (!title || !location || !bhk || !price) {
+    if (!title || !bhk || !price) {
         alert("Please fill all required fields.");
         return;
     }
-
-    const locationName = {
-        "1": "Borivali",
-        "2": "Kandivali",
-        "3": "Goregaon",
-        "4": "Malad"
-    }[location] || "Unknown";
 
     const message = `Hello Ronak Estate 👋
 I would like to sell my property 🏠
 
 Property Details
-Title: ${title}
-Location: ${locationName}
+Property Address: ${title}
 BHK: ${bhk}
-Expected Price: ₹${parseInt(price).toLocaleString()}
+Expected Price: ₹${parseInt(price).toLocaleString('en-IN')}
 
 Please contact me for further discussion.
 Thank you 🙂`;
 
-    const url = "https://wa.me/919594774795?text=" + encodeURIComponent(message);
+    const url = "https://wa.me/918898456334?text=" + encodeURIComponent(message);
 
     window.open(url, "_blank");
     form.reset();

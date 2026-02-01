@@ -1,35 +1,42 @@
-﻿/* =========================================
-   PROPERTY DETAILS – PREMIUM REAL ESTATE UI
-========================================= */
+﻿/* =========================================================
+   PROPERTY DETAILS – FINAL FIX (GRID + FLEX SAFE)
+========================================================= */
 
-.property-details-wrapper {
-    max-width: 1320px;
-    margin: 60px auto;
-    padding: 0 24px;
-    display: grid;
-    grid-template-columns: 1.6fr 1fr;
-    gap: 48px;
-    align-items: flex-start;
-}
-
-/* ===============================
-   LEFT – MEDIA SECTION
-================================ */
-
-.property-gallery {
+/* -------- HARD ISOLATION FROM site.css -------- */
+.property-page-isolation {
+    display: block;
     width: 100%;
 }
 
-/* MAIN IMAGE / VIDEO */
+/* -------- GRID WRAPPER -------- */
+.property-details-wrapper {
+    max-width: 1200px;
+    margin: 60px auto;
+    padding: 0 20px;
+
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    gap: 40px;
+
+    align-items: start;
+}
+
+/* -------- LEFT COLUMN -------- */
+.property-gallery {
+    min-width: 0;          /* 🔑 CRITICAL */
+    display: flex;
+    flex-direction: column;
+}
+
+/* -------- MAIN MEDIA -------- */
 .main-media {
     width: 100%;
     aspect-ratio: 16 / 9;
-    background: #020617;
+    background: #000;
     border-radius: 22px;
     overflow: hidden;
 }
 
-/* IMAGE & VIDEO FIT */
 .media-fit {
     width: 100%;
     height: 100%;
@@ -37,33 +44,30 @@
     display: block;
 }
 
-/* ===============================
-   THUMBNAILS
-================================ */
-
+/* -------- THUMBNAILS -------- */
 .thumbnail-row {
+    margin-top: 14px;
+
     display: flex;
-    gap: 14px;
-    margin-top: 16px;
-    overflow: hidden;
+    gap: 12px;
+
+    overflow-x: auto;
+    overflow-y: hidden;
+
+    max-height: 80px;
+    padding-bottom: 6px;
+}
+
+.thumbnail-row::-webkit-scrollbar {
+    height: 6px;
 }
 
 .thumb {
-    width: 96px;
-    height: 64px;
+    flex: 0 0 90px;
+    height: 70px;
     border-radius: 10px;
     overflow: hidden;
     cursor: pointer;
-    position: relative;
-    flex-shrink: 0;
-    opacity: 0.75;
-    transition: all 0.25s ease;
-}
-
-.thumb:hover,
-.thumb.active {
-    opacity: 1;
-    transform: translateY(-2px);
 }
 
 .thumb img,
@@ -73,7 +77,10 @@
     object-fit: cover;
 }
 
-/* VIDEO THUMB OVERLAY */
+.video-thumb {
+    position: relative;
+}
+
 .video-thumb::after {
     content: "▶";
     position: absolute;
@@ -82,67 +89,46 @@
     align-items: center;
     justify-content: center;
     font-size: 22px;
-    color: #ffffff;
-    background: rgba(0, 0, 0, 0.35);
+    color: #fff;
+    background: rgba(0,0,0,0.35);
 }
 
-/* ===============================
-   RIGHT – INFO CARD
-================================ */
-
+/* -------- RIGHT COLUMN -------- */
 .property-info-card {
-    background: #ffffff;
+    min-width: 0;
+    background: #fff;
     border-radius: 26px;
     padding: 36px;
+    height: fit-content;
 }
 
-/* TITLE */
 .property-info-card h1 {
     font-size: 34px;
-    font-weight: 700;
     margin-bottom: 10px;
 }
 
-/* LOCATION */
-.property-info-card .location {
-    font-size: 15px;
-    color: #64748b;
-    margin-bottom: 18px;
-}
-
-/* PRICE */
 .property-info-card .price {
     font-size: 32px;
     font-weight: 800;
     color: #15803d;
-    margin-bottom: 20px;
+    margin: 18px 0;
 }
 
-/* DESCRIPTION */
-.property-info-card .description {
-    font-size: 15px;
-    color: #475569;
-    line-height: 1.7;
-    margin-bottom: 28px;
-}
-
-/* ===============================
-   CTA BUTTONS
-================================ */
-
-.actions {
+/* -------- ACTIONS -------- */
+.property-actions {
     display: flex;
     gap: 14px;
+    margin-top: 20px;
 }
 
-.cta-btn {
+.property-actions a {
     flex: 1;
-    text-align: center;
     padding: 14px 0;
+    text-align: center;
     border-radius: 999px;
     font-weight: 600;
     text-decoration: none;
-    color: #ffffff;
+    color: #fff;
 }
 
 .btn-call {
@@ -153,34 +139,9 @@
     background: linear-gradient(135deg, #22c55e, #16a34a);
 }
 
-/* ===============================
-   RESPONSIVE – MOBILE SAFE
-================================ */
-
-@media (max-width: 992px) {
+/* -------- MOBILE -------- */
+@media (max-width: 900px) {
     .property-details-wrapper {
         grid-template-columns: 1fr;
-        gap: 32px;
-    }
-
-    .property-info-card {
-        padding: 28px;
-    }
-
-    .property-info-card h1 {
-        font-size: 26px;
-    }
-
-    .price {
-        font-size: 26px;
-    }
-
-    .thumbnail-row {
-        gap: 12px;
-    }
-
-    .thumb {
-        width: 80px;
-        height: 56px;
     }
 }

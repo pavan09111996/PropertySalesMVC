@@ -1,5 +1,19 @@
 ﻿@model PropertyViewModel
+
+@{
+    var currentUrl =
+        $"{Context.Request.Scheme}://{Context.Request.Host}{Context.Request.Path}";
+
+    var message =
+        $"Hi, I am interested in this property.\n\n{currentUrl}";
+
+    var whatsappUrl =
+        "https://wa.me/918898456334?text=" +
+        Uri.EscapeDataString(message);
+}
+
 <link rel="stylesheet" href="~/css/property-details.css" />
+<section class="property-page-isolation">
 
 <section class="property-details-wrapper">
 
@@ -8,36 +22,30 @@
 
         <!-- MAIN MEDIA -->
         <div class="main-media" id="mainMedia">
-
-            @if (Model.Images.Any())
+            @if (Model.Images != null && Model.Images.Any())
             {
-                <img id="mainImage"
-                     src="@Model.Images.First()"
-                     class="media-fit" />
+                <img src="@Model.Images.First()" class="media-fit" />
             }
             else if (!string.IsNullOrEmpty(Model.VideoPath))
             {
-                <video id="mainVideo"
-                       src="@Model.VideoPath"
-                       controls
-                       class="media-fit"></video>
+                <video src="@Model.VideoPath" controls class="media-fit"></video>
             }
             else
             {
                 <img src="~/images/no-image.png" class="media-fit" />
             }
-
         </div>
 
         <!-- THUMBNAILS -->
         <div class="thumbnail-row">
-
-            @foreach (var img in Model.Images)
+            @if (Model.Images != null)
             {
-                <div class="thumb"
-                     onclick="showImage('@img')">
-                    <img src="@img" />
-                </div>
+                foreach (var img in Model.Images)
+                {
+                    <div class="thumb" onclick="showImage('@img')">
+                        <img src="@img" />
+                    </div>
+                }
             }
 
             @if (!string.IsNullOrEmpty(Model.VideoPath))
@@ -45,24 +53,30 @@
                 <div class="thumb video-thumb"
                      onclick="showVideo('@Model.VideoPath')">
                     <video src="@Model.VideoPath"></video>
-                    <span class="play-icon">▶</span>
                 </div>
             }
-
         </div>
+
     </div>
 
     <!-- RIGHT : INFO -->
     <div class="property-info-card">
         <h1>@Model.Title</h1>
         <p>📍 @Model.Location</p>
-        <h2>₹ @Model.Price.ToString("N0")</h2>
+
+        <div class="price">
+            ₹ @Model.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
+        </div>
+
         <p>@Model.Description</p>
 
-        <a class="btn btn-primary">Call Now</a>
-        <a class="btn btn-success">WhatsApp</a>
+        <div class="property-actions">
+            <a href="tel:918898456334" class="btn-call">Call Now</a>
+            <a href="@whatsappUrl" target="_blank" class="btn-whatsapp">WhatsApp</a>
+        </div>
     </div>
 
+</section>
 </section>
 
 <script>

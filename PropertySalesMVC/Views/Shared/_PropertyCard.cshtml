@@ -7,40 +7,41 @@
 
         <span class="featured-badge">Featured</span>
 
-        <img src="@Model.ImagePath"
-             alt="@Model.Title"
-             loading="lazy"
-             class="property-img" />
+        <img
+            src="@Model.ImagePath"
+            alt="@Model.Title"
+            loading="lazy"
+            class="property-img"
+            onerror="this.onerror=null;this.src='/images/no-image.jpg';" />
     </div>
 
     <!-- BODY -->
     <div class="property-body">
 
-        <h3 class="property-title">
-            @Model.Title
-        </h3>
+        <h3 class="property-title">@Model.Title</h3>
 
         <p class="property-location">
             📍 @Model.Location
         </p>
 
         <div class="property-price">
-            ₹ @Model.Price.ToString("N0")
+            ₹ @Model.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
         </div>
 
         <p class="property-desc">
-            @(Model.Description?.Length > 90
-                ? Model.Description.Substring(0, 90) + "..."
-                : Model.Description)
+            @(string.IsNullOrWhiteSpace(Model.Description)
+                ? "No description available"
+                : Model.Description.Length > 90
+                    ? Model.Description.Substring(0, 90) + "..."
+                    : Model.Description)
         </p>
 
         <a href="@Url.Action("PropertyDetails", "Property", new { id = Model.PropertyId })"
-   class="btn-primary"
-   target="_blank"
-   rel="noopener">
-    View Details
-</a>
+           class="btn-primary"
+           target="_blank"
+           rel="noopener">
+            View Details
+        </a>
 
     </div>
-
 </div>

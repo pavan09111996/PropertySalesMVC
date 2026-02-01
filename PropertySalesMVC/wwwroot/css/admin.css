@@ -153,3 +153,59 @@ body {
     border: 1px solid var(--border-light);
     box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
 }
+/* ======================================
+   ADMIN DASHBOARD – MOBILE VIEW FIX
+====================================== */
+
+@media (max-width: 768px) {
+
+    /* Layout wrapper */
+    .admin-layout,
+    .admin-dashboard {
+        display: block !important;
+    }
+
+    /* SIDEBAR */
+    .admin-sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+        padding: 14px;
+        border-right: none;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* Hide sidebar links behind toggle (optional) */
+    .admin-sidebar ul {
+        display: flex;
+        gap: 12px;
+        overflow-x: auto;
+    }
+
+    /* MAIN CONTENT */
+    .admin-content {
+        width: 100%;
+        padding: 16px !important;
+    }
+
+    /* PROPERTY GRID */
+    .property-grid,
+    .admin-property-grid {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 18px;
+    }
+
+    /* PROPERTY CARD */
+    .property-card,
+    .admin-property-card {
+        width: 100%;
+    }
+
+    /* BUTTONS */
+    .property-card .btn,
+    .admin-property-card .btn {
+        width: 100%;
+        margin-top: 8px;
+    }
+}
