@@ -1,13 +1,30 @@
 /* ================================
-   DESIGN SYSTEM – USER SITE
-   Premium Real Estate Brand
+   DESIGN SYSTEM – GLOBAL CHROME
+   "Bombay Modern" — approved design direction.
+   Header/footer/modal here are global (every page);
+   page-specific content (Home = home.css, everything
+   else = landing.css) is layered on top per-page.
 ================================ */
 
 /* ---------- CSS VARIABLES ---------- */
 :root {
-    /* Brand */
-    --brand-primary: #1F3A5F;     /* Deep Navy */
-    --brand-accent: #C9A24D;      /* Soft Gold (Luxury Accent) */
+    /* Legacy tokens — still referenced by not-yet-redesigned pages'
+       inline styles; kept until those pages get their own pass. */
+    --brand-primary: #1F3A5F;
+    --brand-accent: #C9A24D;
+
+    /* Bombay Modern palette */
+    --stone: #EDE7DA;      /* warm limestone — light section ground */
+    --paper: #FBF9F4;      /* warm near-white — card surfaces, header-solid ground */
+    --ink: #14181C;        /* blue-black — dark grounds, primary text */
+    --ink-soft: #4A4F52;   /* muted body text on light grounds */
+    --brass: #A9834B;      /* accent — used sparingly, flat not gradient */
+    --brass-deep: #7C5F35; /* hover/depth variant of brass */
+    --verdigris: #2F5C56;  /* rare secondary accent */
+    --line: rgba(20, 24, 28, 0.12);
+    --line-on-ink: rgba(251, 249, 244, 0.16);
+
+    --display: Optima, Futura, "Century Gothic", "Trebuchet MS", "Segoe UI", sans-serif;
 
     /* Backgrounds */
     --bg-light: #FFFFFF;
@@ -28,7 +45,6 @@
     --radius-lg: 16px;
 
     --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
-
 }
 
 /* ================================
@@ -39,7 +55,7 @@
 }
 
 html, body {
-    height: 100%;
+    min-height: 100%;
     margin: 0;
     font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
     background-color: var(--bg-light);
@@ -58,6 +74,11 @@ header {
 }
 /* ================================
    STICKY FOOTER LAYOUT (CRITICAL)
+   min-height (not height) on html/body above is what makes this work —
+   using height:100% here would make body its own internal scroll
+   container once content exceeds one viewport (combined with the
+   overflow-x:hidden further down implicitly computing overflow-y:auto),
+   breaking normal page scroll and sticky positioning on real devices.
 ================================ */
 body {
     display: flex;
@@ -70,75 +91,139 @@ body {
 
 /* ================================
    HEADER / NAVBAR
+   Solid by default (safe for every page). Home opts into a
+   transparent-over-hero treatment via body.has-transparent-header —
+   pages without a dark hero at the very top (e.g. Contact) must never
+   get a transparent header, or the nav becomes invisible on load.
 ================================ */
 
+/* Vertical-only: this element also carries Bootstrap's .container class,
+   which supplies the left/right gutter (12px) that keeps the logo off
+   the viewport edge on mobile — zeroing all padding here wiped that out
+   too, since .site-header already handles vertical spacing on its own. */
 .site-header .navbar {
-    padding: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
 }
 .site-header {
-    background: #ffffff;
-    border-bottom: 1px solid var(--border-light);
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
     position: sticky;
     top: 0;
     z-index: 1000;
-    padding: 0 !important;
-}
-.site-header .logo {
-    height: 95px;
-    width: auto;
-    margin: 0;
-    display: block;
+    padding: 14px 0 !important;
+    transition: background 0.35s ease, border-color 0.35s ease, padding 0.35s ease;
 }
 
+/* position:sticky still reserves its own space in normal flow at its
+   start position, which would push the hero down and reveal the plain
+   body background above it — fixed removes the header from flow
+   entirely so the hero's own background can start at y=0 underneath it. */
+body.has-transparent-header .site-header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    background: transparent;
+    border-bottom-color: transparent;
+    padding: 22px 0 !important;
+}
+
+body.has-transparent-header .site-header.is-solid {
+    background: rgba(237, 231, 218, 0.94);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom-color: var(--line);
+    padding: 14px 0 !important;
+}
 
 .navbar-brand {
     padding: 0;
     margin: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
 }
+
 .navbar-brand .logo {
-    height: 95px;
-    margin-right: 28px;
+    height: 30px;
+    width: auto;
+    display: block;
+}
+
+.brand-tagline {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    transition: color 0.35s ease;
+}
+
+body.has-transparent-header .site-header:not(.is-solid) .brand-tagline {
+    color: rgba(251, 249, 244, 0.65);
 }
 
 /* NAV LINKS */
 .nav-link {
-    color: #334155;
-    font-weight: 500;
+    position: relative;
+    color: var(--ink);
+    font-weight: 600;
     text-decoration: none;
-    transition: color 0.2s ease;
-    font-size: 14px;
-    font-weight: 400;
-    color: #3e4655;
-    letter-spacing: 0.3px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-bottom: 4px;
     transition: color 0.25s ease;
 }
 
-.nav-link:hover {
-    color: #1f2f44;
+body.has-transparent-header .site-header:not(.is-solid) .nav-link {
+    color: var(--paper);
+}
+
+.nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background: var(--brass);
+    transition: width 0.25s var(--ease-premium);
+}
+
+.nav-link:hover::after {
+    width: 100%;
 }
 
 /* ADMIN LOGIN BUTTON */
 .btn-admin-login {
-    font-size: 13px;
-    padding: 8px 18px;
-    border-radius: 999px;
-    background: #223a5e;          /* muted navy */
-    color: #fff;
-    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 10px 20px;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--ink);
+    text-decoration: none;
     transition: all 0.25s ease;
 }
 
+body.has-transparent-header .site-header:not(.is-solid) .btn-admin-login {
+    color: var(--paper);
+    border-color: var(--line-on-ink);
+}
+
 .btn-admin-login:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 16px 35px rgba(31, 58, 95, 0.45);
-    color: #ffffff;
-    background: #182c45;
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--ink);
 }
 
 /* ================================
-   HERO SECTION (IF USED)
+   HERO SECTION (fallback, for any page that doesn't define its own)
 ================================ */
 .hero {
     position: relative;
@@ -181,7 +266,7 @@ body {
 }
 
 /* ================================
-   PRIMARY CTA BUTTON
+   PRIMARY CTA BUTTON (legacy — used by landing.css-era pages)
 ================================ */
 .btn-primary,
 .btn-view {
@@ -201,51 +286,59 @@ body {
         0 18px 40px rgba(31, 58, 95, 0.45);
 }
 
-
-
-
-
-
 /* ================================
    FOOTER
 ================================ */
 .site-footer {
-    background: linear-gradient(135deg, #050b1c, #020617);
-    color: #ffffff;
-    padding: 64px 0 28px;
+    background: var(--ink);
+    color: var(--paper);
+    padding: 72px 0 28px;
     font-size: 14px;
+    border-top: 1px solid var(--brass);
 }
 
 .footer-title {
-    font-weight: 700;
-    letter-spacing: 0.08em;
+    font-family: var(--display);
+    font-weight: 500;
+    letter-spacing: 0.02em;
     margin-bottom: 12px;
 }
 
 .footer-heading {
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 14px;
     text-transform: uppercase;
-    font-size: 12px;
+    letter-spacing: 0.12em;
+    font-size: 11px;
+    color: var(--brass);
 }
 
 .footer-text {
-    color: #9aa4b2;
+    color: rgba(251, 249, 238, 0.6);
     line-height: 1.7;
 }
 
+.footer-links {
+    margin: 0;
+    padding: 0;
+}
+
+.footer-links li {
+    margin-bottom: 10px;
+}
+
 .site-footer a {
-    color: #e5e7eb;
+    color: rgba(251, 249, 238, 0.72);
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
 .site-footer a:hover {
-    color: var(--brand-accent);
+    color: var(--brass);
 }
 
 .site-footer hr {
-    border-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--line-on-ink);
     margin: 24px 0;
 }
 
@@ -254,38 +347,39 @@ body {
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    color: #9aa4b2;
+    color: rgba(251, 249, 238, 0.5);
 }
 
 /* ================================
-   SOCIAL ICON BRAND COLORS
+   SOCIAL ICONS — quiet outline circles, not brand-color badges
 ================================ */
+.social-icons {
+    display: flex;
+    gap: 12px;
+}
+
 .social-icons a {
-    margin-left: 16px;
-    font-size: 22px;
-    transition: transform 0.25s ease, color 0.25s ease;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--line-on-ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: 0;
+    font-size: 14px;
+    transition: border-color 0.25s ease, color 0.25s ease;
 }
 
-/* Instagram */
-.social-icons a .fa-instagram {
-    color: #E1306C;
+.social-icons a,
+.social-icons a i {
+    color: rgba(251, 249, 238, 0.75);
 }
 
-.social-icons a:hover .fa-instagram {
-    color: #F77737;
-}
-
-/* Facebook */
-.social-icons a .fa-facebook-f {
-    color: #1877F2;
-}
-
-.social-icons a:hover .fa-facebook-f {
-    color: #145DBF;
-}
-
-.social-icons a:hover {
-    transform: translateY(-2px);
+.social-icons a:hover,
+.social-icons a:hover i {
+    border-color: var(--brass);
+    color: var(--brass);
 }
 
 /* ================================
@@ -298,28 +392,82 @@ body {
 /* ================================
    RESPONSIVE
 ================================ */
-@media (max-width: 768px) {
-    .navbar-nav {
-        gap: 14px;
-        padding-top: 12px;
+@media (max-width: 991px) {
+    .navbar-brand .logo {
+        height: 26px;
     }
 
-    .btn-admin-login {
-        width: 100%;
+    /* Absolutely positioned, opaque dark panel — deliberately not an
+       in-flow transparent strip. .site-header is always position:sticky
+       or position:fixed (never static), so it's the containing block
+       here regardless of which; that also means this panel floats over
+       the hero instead of pushing it down. A solid ink panel reads as a
+       real mobile nav drawer on every page, whether the header behind
+       it happens to be transparent (Home) or already solid (everywhere
+       else) — no version of "blends into the background" either way. */
+    .navbar-collapse {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--ink);
+        padding: 28px 24px 32px;
+        box-shadow: 0 24px 48px rgba(20, 24, 28, 0.32);
+        border-top: 1px solid var(--line-on-ink);
+        margin-top: 0;
+    }
+
+    .navbar-nav {
+        gap: 18px;
+        align-items: center !important;
         text-align: center;
+    }
+
+    .navbar-collapse .nav-link {
+        color: var(--paper) !important;
+        font-size: 15px;
+        padding: 4px 0;
+    }
+
+    .navbar-collapse .nav-link::after {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    .navbar-collapse .nav-link:hover::after {
+        width: 40px;
+    }
+
+    .navbar-collapse .btn-admin-login {
+        color: var(--paper);
+        border-color: var(--line-on-ink);
+        width: auto;
+        min-width: 160px;
+        justify-content: center;
+        margin-top: 8px;
     }
 
     .hero h1 {
         font-size: 40px;
     }
+
+    .footer-heading {
+        margin-top: 8px;
+    }
+}
+
+@media (max-width: 420px) {
+    .navbar-brand .logo {
+        height: 22px;
+    }
 }
 /* ===============================
-   PREMIUM ADMIN LOGIN MODAL
+   ADMIN LOGIN MODAL
 ================================ */
 
 /* HEADER */
 .premium-header {
-    background: linear-gradient(135deg, #020617, #0f172a);
+    background: var(--ink);
     padding: 24px 28px;
     display: flex;
     justify-content: space-between;
@@ -328,15 +476,16 @@ body {
 
 .premium-header h4 {
     margin: 0;
-    color: #ffffff;
-    font-weight: 700;
-    letter-spacing: 0.4px;
+    color: var(--paper);
+    font-family: var(--display);
+    font-weight: 500;
+    letter-spacing: 0.02em;
 }
 
 .premium-header p {
     margin: 4px 0 0;
     font-size: 13px;
-    color: #94a3b8;
+    color: rgba(251, 249, 238, 0.6);
 }
 
 /* CLOSE */
@@ -344,19 +493,19 @@ body {
     background: transparent;
     border: none;
     font-size: 26px;
-    color: #94a3b8;
+    color: rgba(251, 249, 238, 0.6);
     cursor: pointer;
     line-height: 1;
 }
 
 .premium-close:hover {
-    color: #ffffff;
+    color: var(--paper);
 }
 
 /* BODY */
 .premium-body {
     padding: 28px;
-    background: #f8fafc;
+    background: var(--paper);
 }
 
 .premium-field {
@@ -365,31 +514,33 @@ body {
 
 .premium-field label {
     display: block;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: #334155;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
     margin-bottom: 6px;
 }
 
 .premium-input {
     width: 100%;
     padding: 14px;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    border: 1px solid var(--line);
     font-size: 14px;
     background: #ffffff;
 }
 
 .premium-input:focus {
     outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37,99,235,0.15);
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px rgba(169, 131, 75, 0.18);
 }
 
 /* ERROR */
 .premium-error {
     font-size: 13px;
-    color: #dc2626;
+    color: #b3261e;
     margin-top: 6px;
 }
 
@@ -400,62 +551,66 @@ body {
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--line);
 }
 
 /* BUTTONS */
 .btn-login {
-    background: linear-gradient(135deg, #1e3a8a, #2563eb);
-    color: #ffffff;
-    padding: 12px 28px;
-    border-radius: 14px;
+    background: var(--brass);
+    color: var(--ink);
+    padding: 12px 26px;
+    border-radius: 4px;
     font-weight: 600;
-    border: none;
-    box-shadow: 0 14px 40px rgba(37,99,235,0.55);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border: 1px solid var(--brass);
     cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .btn-login:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 22px 50px rgba(37,99,235,0.7);
+    background: transparent;
+    color: var(--brass-deep);
 }
 
 .btn-cancel {
-    background: #f1f5f9;
-    color: #334155;
-    padding: 12px 22px;
-    border-radius: 14px;
-    border: none;
+    background: transparent;
+    color: var(--ink-soft);
+    padding: 12px 20px;
+    border-radius: 4px;
+    border: 1px solid var(--line);
     cursor: pointer;
 }
 
 /* ===============================
-   PREMIUM ADMIN MODAL (SAFARI SAFE)
+   ADMIN MODAL (SAFARI SAFE)
 ================================ */
 
 .premium-admin-modal .modal-dialog {
-    max-width: 460px;
+    max-width: 440px;
     margin: auto;
 }
 
 .premium-admin-modal .modal-content {
-    border-radius: 18px;
+    border-radius: 4px;
     border: none;
     box-shadow: 0 40px 80px rgba(0,0,0,0.35);
-    overflow: hidden; /* 🔑 SAFARI FIX */
+    overflow: hidden; /* Safari fix */
     background: #ffffff;
 }
 
 /* HEADER */
 .premium-admin-modal .modal-header {
     padding: 28px 28px 18px;
-    border-bottom: 1px solid #e5e7eb;
+    border-bottom: 1px solid var(--line);
 }
 
 .premium-admin-modal .modal-title {
-    font-size: 24px;
-    font-weight: 700;
-    color: #0f172a;
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--ink);
 }
 
 /* BODY */
@@ -466,26 +621,26 @@ body {
 /* INPUTS */
 .premium-admin-modal .form-control {
     height: 46px;
-    border-radius: 10px;
-    border: 1px solid #d1d5db;
+    border-radius: 4px;
+    border: 1px solid var(--line);
     font-size: 15px;
 }
 
 .premium-admin-modal .form-control:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+    border-color: var(--brass);
+    box-shadow: 0 0 0 3px rgba(169, 131, 75, 0.18);
 }
 
 /* ERROR */
 #loginError {
     font-size: 14px;
-    color: #dc2626;
+    color: #b3261e;
 }
 
 /* FOOTER */
 .premium-admin-modal .modal-footer {
     padding: 20px 28px;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid var(--line);
     display: flex;
     justify-content: flex-end;
     gap: 12px;
@@ -496,7 +651,7 @@ body {
     opacity: 0.65;
 }
 
-/* Premium modal entrance */
+/* modal entrance */
 .modal.fade .modal-dialog {
     transform: translateY(30px) scale(0.98);
     transition: transform 0.45s var(--ease-premium), opacity 0.3s ease;
@@ -543,18 +698,19 @@ img {
 }
 :focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
-    border-radius: 6px;
+    box-shadow: 0 0 0 3px rgba(169, 131, 75, 0.35);
+    border-radius: 2px;
 }
 /* ===============================
-   GLOBAL PREMIUM POLISH
+   GLOBAL POLISH
 ================================ */
 
 .container-xl {
     max-width: 1320px;
 }
 
-/* Typography refinement */
+/* Typography refinement — legacy pages still use Playfair Display;
+   Home overrides this via more specific selectors in home.css. */
 h1, h2, h3 {
     font-family: 'Playfair Display', serif;
     letter-spacing: -0.02em;
@@ -564,8 +720,14 @@ p, span {
     line-height: 1.7;
 }
 
-/* Remove horizontal scroll globally */
-html, body {
+/* Remove horizontal scroll globally.
+   Deliberately html-only: setting this on both html AND body makes each
+   independently auto-compute overflow-y:auto (per the CSS overflow spec's
+   visible->auto propagation rule), creating two competing scroll
+   containers. That ambiguity is what broke mouse-wheel scrolling
+   (keyboard PageDown still worked because it targets
+   document.scrollingElement directly, bypassing the ambiguity). */
+html {
     overflow-x: hidden;
 }
 
@@ -595,8 +757,10 @@ html, body {
     box-shadow: none;
 }
 
-/* Custom dark hamburger icon */
 .navbar-toggler-icon {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(31,58,95,0.95)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(20,24,28,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
 }
 
+body.has-transparent-header .site-header:not(.is-solid) .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba(251,249,238,0.9)' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}

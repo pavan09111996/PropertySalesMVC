@@ -1,0 +1,69 @@
+/* ===============================================
+   LISTING PAGES — "Bombay Modern"
+   Scoped to Buy.cshtml, Rent.cshtml, Sell.cshtml, Listing.cshtml.
+   These are secondary pages, so they get a compact page header
+   instead of Home's full split hero. Property grid/card and filter
+   bar come from listing-shared.css (linked alongside this file).
+   Tokens come from site.css:root.
+=================================================== */
+
+.page-header {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 60px 32px 52px;
+}
+
+.page-header-inner {
+    max-width: 1180px;
+    margin: 0 auto;
+}
+
+.mode-switch {
+    display: flex;
+    gap: 26px;
+    margin-bottom: 22px;
+}
+
+.mode-switch a {
+    color: rgba(251, 249, 244, 0.5);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding-bottom: 6px;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s ease;
+}
+
+.mode-switch a:hover { color: var(--paper); }
+
+.mode-switch a.active {
+    color: var(--paper);
+    border-color: var(--brass);
+}
+
+.page-header h1 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(32px, 4vw, 48px);
+    margin: 0 0 14px;
+    line-height: 1.1;
+}
+
+.page-header h1 .gold-accent {
+    color: var(--brass);
+    font-style: normal;
+}
+
+.page-header p {
+    margin: 0;
+    color: rgba(251, 249, 244, 0.68);
+    font-size: 15px;
+    max-width: 52ch;
+}
+
+@media (max-width: 768px) {
+    .page-header { padding: 44px 20px 40px; }
+    .mode-switch { gap: 20px; }
+}

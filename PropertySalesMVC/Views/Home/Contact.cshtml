@@ -3,13 +3,16 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/contact.css" />
+    <link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/contact.css" asp-append-version="true" />
 }
-<section class="contact-wrapper">
+<section class="contact-page">
+<div class="contact-wrapper">
 
     <!-- LEFT : INFO -->
     <div class="contact-info">
-        <h1>Get in Touch</h1>
+        <span class="eyebrow">Get In Touch</span>
+        <h1>Let's talk property.</h1>
         <p class="subtitle">
             Contact Ronak Estate for property details, site visits,
             pricing and availability.
@@ -17,7 +20,6 @@
 
         <div class="contact-details">
             <div class="contact-item">
-                <span class="icon">📞</span>
                 <div>
                     <label>Call Us</label>
                     <a href="tel:@ViewBag.Admin.Phone">@ViewBag.Admin.Phone</a>
@@ -25,7 +27,6 @@
             </div>
 
             <div class="contact-item">
-                <span class="icon">💬</span>
                 <div>
                     <label>WhatsApp</label>
                     <a href="https://wa.me/@ViewBag.Admin.WhatsApp" target="_blank">
@@ -35,7 +36,6 @@
             </div>
 
             <div class="contact-item">
-                <span class="icon">📍</span>
                 <div>
                     <label>Office</label>
                     <span>Mumbai, Maharashtra</span>
@@ -49,7 +49,7 @@
         <h3>Send a Message</h3>
 
         <form method="post" asp-action="Contact" asp-controller="Home">
-            <div class="form-group">
+            <div class="field">
                 <label>Your Name</label>
                 <input type="text"
                        name="Name"
@@ -57,7 +57,7 @@
                        required />
             </div>
 
-            <div class="form-group">
+            <div class="field">
                 <label>Phone Number</label>
                 <input type="tel"
                        name="Phone"
@@ -65,7 +65,7 @@
                        required />
             </div>
 
-            <div class="form-group">
+            <div class="field">
                 <label>Message</label>
                 <textarea name="Message"
                           rows="4"
@@ -73,7 +73,7 @@
                           required></textarea>
             </div>
 
-            <button type="submit" class="btn-submit">
+            <button type="submit" class="btn-brass-block">
                 Send Message
             </button>
 
@@ -84,4 +84,5 @@
         </form>
     </div>
 
+</div>
 </section>

@@ -1,42 +1,39 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using PropertySalesMVC.Models;
-using PropertySalesMVC.Helpers;
+using PropertySalesMVC.Services;
 
 namespace PropertySalesMVC.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly IAdminService _adminService;
+        private readonly IEnquiryService _enquiryService;
+        private readonly IPropertyService _propertyService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, IAdminService adminService, IEnquiryService enquiryService, IPropertyService propertyService)
         {
             _logger = logger;
+            _adminService = adminService;
+            _enquiryService = enquiryService;
+            _propertyService = propertyService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            //AdminDetails fetch here for AdressBar
+            var adminDetails = await _adminService.GetAdminDetailsForLayoutAsync();
+            PopulateAdminViewBag(adminDetails);
 
-            var adminDetails = GetAdminDetails();
+            var contact = await _adminService.GetActiveAdminContactAsync();
+            ViewBag.WhatsAppNumber = contact?.WhatsApp ?? "";
 
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
-
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
-            return View();
+            // Panel shows ONLY explicitly-Featured properties — no fallback
+            // to recent listings. The hero panel itself is always rendered
+            // (see Home/Index.cshtml); when nothing's ticked it shows its
+            // own decorative motif instead of the listings track.
+            var featured = await _propertyService.GetFeaturedPropertiesAsync();
+            return View(featured);
         }
 
         public IActionResult Privacy()
@@ -51,42 +48,32 @@ namespace PropertySalesMVC.Controllers
         }
 
         [HttpGet]
-        public IActionResult Contact()
+        public async Task<IActionResult> Contact()
         {
-            ViewBag.Admin = GetActiveAdmin();
-             var adminDetails = GetAdminDetails();
+            ViewBag.Admin = await _adminService.GetActiveAdminContactAsync();
 
-            if (adminDetails != null)
-            {
-                ViewBag.CompanyName = adminDetails.CompanyName;
-                ViewBag.OwnerName = adminDetails.OwnerName;
-                ViewBag.Designation = adminDetails.Designation;
+            var adminDetails = await _adminService.GetAdminDetailsForLayoutAsync();
+            PopulateAdminViewBag(adminDetails);
 
-                ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
-                ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
-
-                ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
-                ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
-
-                ViewBag.InstagramUrl = adminDetails.InstagramUrl;
-                ViewBag.FacebookUrl = adminDetails.FacebookUrl;
-            }
             return View();
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public IActionResult Contact(ContactViewModel model)
+        public async Task<IActionResult> Contact(ContactViewModel model)
         {
             if (!ModelState.IsValid)
                 return View(model);
 
-            AdminContactInfo admin = GetActiveAdmin();
+            var admin = await _adminService.GetActiveAdminContactAsync();
 
             if (admin == null)
             {
                 ModelState.AddModelError("", "Contact service temporarily unavailable.");
                 return View(model);
             }
+
+            await _enquiryService.LogContactEnquiryAsync(model.Name, model.Phone, model.Message);
 
             string message =
                 "New Property Enquiry\n" +
@@ -104,69 +91,23 @@ namespace PropertySalesMVC.Controllers
             return Redirect(whatsappUrl);
         }
 
-        private AdminDetails GetAdminDetails()
+        private void PopulateAdminViewBag(AdminDetails? adminDetails)
         {
-            AdminDetails admin = null;
+            if (adminDetails == null)
+                return;
 
-            using (SqlConnection con = new SqlConnection(
-                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-            {
-                con.Open();
+            ViewBag.CompanyName = adminDetails.CompanyName;
+            ViewBag.OwnerName = adminDetails.OwnerName;
+            ViewBag.Designation = adminDetails.Designation;
 
-                string query = "SELECT TOP 1 * FROM AdminDetails WHERE IsActive = 1";
+            ViewBag.HeadOfficeTitle = adminDetails.HeadOfficeTitle;
+            ViewBag.HeadOfficeAddress = adminDetails.HeadOfficeAddress;
 
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.Read())
-                    {
-                        admin = new AdminDetails
-                        {
-                            OwnerName = reader["OwnerName"].ToString(),
-                            CompanyName = reader["CompanyName"].ToString(),
-                            Designation = reader["Designation"].ToString(),
+            ViewBag.BranchOfficeTitle = adminDetails.BranchOfficeTitle;
+            ViewBag.BranchOfficeAddress = adminDetails.BranchOfficeAddress;
 
-                            HeadOfficeTitle = reader["HeadOfficeTitle"].ToString(),
-                            HeadOfficeAddress = reader["HeadOfficeAddress"].ToString(),
-
-                            BranchOfficeTitle = reader["BranchOfficeTitle"].ToString(),
-                            BranchOfficeAddress = reader["BranchOfficeAddress"].ToString(),
-
-                            InstagramUrl = reader["InstagramUrl"].ToString(),
-                            FacebookUrl = reader["FacebookUrl"].ToString()
-                        };
-                    }
-                }
-            }
-
-            return admin;
-        }
-
-        private AdminContactInfo GetActiveAdmin()
-        {
-            using SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;");
-            con.Open();
-
-            using SqlCommand cmd = new SqlCommand(@"
-                SELECT TOP 1 AdminId, AdminName, Phone, WhatsApp, Email
-                FROM AdminMaster
-                WHERE IsActive = 1
-                ORDER BY CreatedOn DESC", con);
-
-            using SqlDataReader dr = cmd.ExecuteReader();
-            if (dr.Read())
-            {
-                return new AdminContactInfo
-                {
-                    AdminId = (int)dr["AdminId"],
-                    AdminName = dr["AdminName"].ToString(),
-                    Phone = dr["Phone"].ToString(),
-                    WhatsApp = dr["WhatsApp"].ToString(),
-                    Email = dr["Email"]?.ToString()
-                };
-            }
-
-            return null;
+            ViewBag.InstagramUrl = adminDetails.InstagramUrl;
+            ViewBag.FacebookUrl = adminDetails.FacebookUrl;
         }
     }
 }

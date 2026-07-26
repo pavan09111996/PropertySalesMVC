@@ -1,0 +1,26 @@
+@model List<PropertySalesMVC.Models.PropertyViewModel>
+
+@{
+    ViewData["Title"] = "Properties for Sale - Ronak Estate";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/listing-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/listing-pages.css" asp-append-version="true" />
+}
+
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="mode-switch">
+            <a href="/Property/Buy">Buy</a>
+            <a href="/Property/Rent">Rent</a>
+            <a href="/Property/Sell" class="active">Sell</a>
+        </div>
+        <h1>Properties for <span class="gold-accent">Sale</span></h1>
+        <p>Handpicked homes across Borivali &amp; Kandivali, listed for sale.</p>
+    </div>
+</div>
+
+<section class="properties-section">
+    @await Html.PartialAsync("_PropertyGrid", Model)
+</section>

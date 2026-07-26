@@ -1,39 +1,37 @@
-﻿/* =========================================================
-   PROPERTY DETAILS – FINAL FIX (GRID + FLEX SAFE)
-========================================================= */
+/* ===============================================
+   PROPERTY DETAILS — "Bombay Modern"
+   Scoped to Views/Property/PropertyDetails.cshtml only.
+   Tokens (--stone, --ink, --brass, etc.) come from site.css:root.
+=================================================== */
 
-/* -------- HARD ISOLATION FROM site.css -------- */
 .property-page-isolation {
     display: block;
     width: 100%;
 }
 
-/* -------- GRID WRAPPER -------- */
+.details-page {
+    background: var(--stone);
+    padding: 48px 32px 88px;
+}
+
 .property-details-wrapper {
-    max-width: 1200px;
-    margin: 60px auto;
-    padding: 0 20px;
-
+    max-width: 1180px;
+    margin: 0 auto;
     display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
-    gap: 40px;
-
+    grid-template-columns: 1.5fr 1fr;
+    gap: 4px;
     align-items: start;
 }
 
-/* -------- LEFT COLUMN -------- */
+/* -------- LEFT: GALLERY -------- */
 .property-gallery {
-    min-width: 0;          /* 🔑 CRITICAL */
-    display: flex;
-    flex-direction: column;
+    min-width: 0;
 }
 
-/* -------- MAIN MEDIA -------- */
 .main-media {
     width: 100%;
-    aspect-ratio: 16 / 9;
-    background: #000;
-    border-radius: 22px;
+    aspect-ratio: 16 / 10;
+    background: var(--line);
     overflow: hidden;
 }
 
@@ -44,31 +42,28 @@
     display: block;
 }
 
-/* -------- THUMBNAILS -------- */
 .thumbnail-row {
-    margin-top: 14px;
-
+    margin-top: 4px;
     display: flex;
-    gap: 12px;
-
+    gap: 4px;
     overflow-x: auto;
-    overflow-y: hidden;
-
-    max-height: 80px;
-    padding-bottom: 6px;
+    padding-bottom: 2px;
 }
 
-.thumbnail-row::-webkit-scrollbar {
-    height: 6px;
-}
+.thumbnail-row::-webkit-scrollbar { height: 6px; }
 
 .thumb {
-    flex: 0 0 90px;
-    height: 70px;
-    border-radius: 10px;
+    flex: 0 0 88px;
+    height: 66px;
     overflow: hidden;
     cursor: pointer;
+    position: relative;
+    background: var(--line);
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
 }
+
+.thumb:hover { opacity: 1; }
 
 .thumb img,
 .thumb video {
@@ -77,71 +72,108 @@
     object-fit: cover;
 }
 
-.video-thumb {
-    position: relative;
-}
-
 .video-thumb::after {
-    content: "▶";
+    content: "\25B6";
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
-    color: #fff;
-    background: rgba(0,0,0,0.35);
+    font-size: 16px;
+    color: var(--paper);
+    background: rgba(20, 24, 28, 0.45);
 }
 
-/* -------- RIGHT COLUMN -------- */
+/* -------- RIGHT: INFO CARD -------- */
 .property-info-card {
     min-width: 0;
-    background: #fff;
-    border-radius: 26px;
-    padding: 36px;
-    height: fit-content;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 40px;
+    position: sticky;
+    /* .site-header is ~76px tall and itself sticky at top:0 — this must
+       clear it, or the card's own content (starting with the location
+       label) slides underneath the header once stuck instead of
+       stopping below it. */
+    top: 96px;
+}
+
+.property-info-card .property-location {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 14px;
 }
 
 .property-info-card h1 {
-    font-size: 34px;
-    margin-bottom: 10px;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 28px;
+    color: var(--ink);
+    margin: 0 0 18px;
+    line-height: 1.25;
 }
 
 .property-info-card .price {
-    font-size: 32px;
-    font-weight: 800;
-    color: #15803d;
-    margin: 18px 0;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 30px;
+    color: var(--brass-deep);
+    margin: 0 0 24px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+}
+
+.property-info-card > p:not(.property-location) {
+    font-size: 14px;
+    line-height: 1.75;
+    color: var(--ink-soft);
+    margin: 0 0 32px;
 }
 
 /* -------- ACTIONS -------- */
 .property-actions {
     display: flex;
-    gap: 14px;
-    margin-top: 20px;
+    gap: 10px;
 }
 
 .property-actions a {
     flex: 1;
-    padding: 14px 0;
+    padding: 15px;
     text-align: center;
-    border-radius: 999px;
-    font-weight: 600;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     text-decoration: none;
-    color: #fff;
+    transition: background 0.2s ease, color 0.2s ease;
 }
 
 .btn-call {
-    background: linear-gradient(135deg, #1e3a8a, #2563eb);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+}
+
+.btn-call:hover {
+    background: var(--ink);
+    color: var(--paper);
 }
 
 .btn-whatsapp {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
+    background: var(--verdigris);
+    color: var(--paper);
+    border: 1px solid var(--verdigris);
 }
 
-/* -------- MOBILE -------- */
+.btn-whatsapp:hover {
+    background: transparent;
+    color: var(--verdigris);
+}
+
 @media (max-width: 900px) {
-    .property-details-wrapper {
-        grid-template-columns: 1fr;
-    }
+    .details-page { padding: 32px 20px 64px; }
+    .property-details-wrapper { grid-template-columns: 1fr; }
+    .property-info-card { position: static; }
 }

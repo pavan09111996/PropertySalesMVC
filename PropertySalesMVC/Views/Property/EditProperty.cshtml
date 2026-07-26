@@ -4,7 +4,7 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<link href="~/css/property-update.css" rel="stylesheet" />
+<link href="~/css/property-update.css" rel="stylesheet" asp-append-version="true" />
 
 <div class="edit-property-container">
     <h2>Edit Property</h2>
@@ -18,6 +18,8 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="PropertyId" />
 
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
         <!-- ================= TITLE ================= -->
         <div class="mb-3">
             <label class="form-label">Title</label>
@@ -26,30 +28,21 @@
 
         <!-- ================= LOOKING FOR ================= -->
         <div class="mb-3">
-            <label class="fw-bold d-block">Looking For</label>
+            <label class="form-label d-block">Looking For</label>
 
-            <div class="form-check form-check-inline">
-                <input class="form-check-input"
-                       type="radio"
-                       asp-for="LookingFor"
-                       value="1" />
-                <label class="form-check-label">Rent</label>
-            </div>
-
-            <div class="form-check form-check-inline">
-                <input class="form-check-input"
-                       type="radio"
-                       asp-for="LookingFor"
-                       value="2" />
-                <label class="form-check-label">Buy</label>
-            </div>
-
-            <div class="form-check form-check-inline">
-                <input class="form-check-input"
-                       type="radio"
-                       asp-for="LookingFor"
-                       value="3" />
-                <label class="form-check-label">Sell</label>
+            <div class="segmented">
+                <label>
+                    <input type="radio" asp-for="LookingFor" value="1" />
+                    Rent
+                </label>
+                <label>
+                    <input type="radio" asp-for="LookingFor" value="2" />
+                    Buy
+                </label>
+                <label>
+                    <input type="radio" asp-for="LookingFor" value="3" />
+                    Sell
+                </label>
             </div>
         </div>
 
@@ -63,6 +56,14 @@
                     <option value="@i">@i BHK</option>
                 }
             </select>
+        </div>
+
+        <!-- ================= FEATURED ================= -->
+        <div class="mb-3 form-check">
+            <input asp-for="IsFeatured" type="checkbox" class="form-check-input" />
+            <label class="form-check-label" asp-for="IsFeatured">
+                Featured — show in the auto-scrolling panel on the Home page
+            </label>
         </div>
 
         <!-- ================= LOCATION ================= -->
@@ -105,14 +106,7 @@
             @foreach (var img in Model.ExistingImages)
             {
                 <div class="image-card existing">
-                    @if (!string.IsNullOrEmpty(img.ImagePath))
-                    {
-                        <img src="@img.ImagePath" />
-                    }
-                    else
-                    {
-                        <img src="data:image/jpeg;base64,@img.ImageBase64" />
-                    }
+                    <img src="@img.ImagePath" />
 
                     <button type="button"
                             class="remove-btn"
@@ -147,9 +141,11 @@
         @if (!string.IsNullOrEmpty(Model.ExistingVideoPath))
         {
             <div class="mb-2">
-                <video controls width="100%" style="max-height:280px">
-                    <source src="@Model.ExistingVideoPath" type="video/mp4" />
-                </video>
+                <div class="video-preview">
+                    <video controls>
+                        <source src="@Model.ExistingVideoPath" type="video/mp4" />
+                    </video>
+                </div>
 
                 <div class="form-check mt-2">
                     <input class="form-check-input"
@@ -164,21 +160,23 @@
 
         <div class="mb-3">
             <input type="file"
+                   id="NewVideo"
                    name="NewVideo"
                    class="form-control"
                    accept="video/mp4,video/webm,video/ogg" />
-            <small class="text-muted">Upload to replace existing video</small>
+            <small class="text-muted">Upload to replace existing video · Max 20MB · Max 1920px on the longer side</small>
+            <small id="videoError" class="d-block" style="color:var(--rust);"></small>
         </div>
 
         <!-- ================= ACTIONS ================= -->
-        <div class="mt-4">
+        <div class="edit-actions">
             <button type="submit" class="btn btn-primary">
                 Update Property
             </button>
 
             <a asp-action="Dashboard"
                asp-controller="Admin"
-               class="btn btn-secondary ms-2">
+               class="btn btn-secondary">
                 Cancel
             </a>
         </div>
@@ -247,4 +245,35 @@
         const hiddenInput = card.querySelector("input[type='hidden']");
         hiddenInput.disabled = !hiddenInput.disabled;
     }
+
+    // Videos aren't resized server-side (no transcoding infra on this
+    // host), so this is the only place resolution ever gets checked —
+    // catch it here with real feedback rather than a silent-looking crop.
+    const videoInput = document.getElementById("NewVideo");
+    const videoError = document.getElementById("videoError");
+    const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+    const MAX_VIDEO_DIMENSION = 1920;
+
+    videoInput.addEventListener("change", function () {
+        videoError.textContent = "";
+        const file = this.files[0];
+        if (!file) return;
+
+        if (file.size > MAX_VIDEO_BYTES) {
+            videoError.textContent = `That video is ${(file.size / (1024 * 1024)).toFixed(1)}MB — please compress it or trim the clip to under 20MB.`;
+            this.value = "";
+            return;
+        }
+
+        const probe = document.createElement("video");
+        probe.preload = "metadata";
+        probe.onloadedmetadata = function () {
+            URL.revokeObjectURL(probe.src);
+            if (probe.videoWidth > MAX_VIDEO_DIMENSION || probe.videoHeight > MAX_VIDEO_DIMENSION) {
+                videoError.textContent = `That video is ${probe.videoWidth}×${probe.videoHeight} — please export at 1920px or smaller on the longer side.`;
+                videoInput.value = "";
+            }
+        };
+        probe.src = URL.createObjectURL(file);
+    });
 </script>

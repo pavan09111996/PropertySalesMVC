@@ -1,135 +1,95 @@
-/* ===============================
-   CONTACT PAGE
-================================ */
+/* ===============================================
+   CONTACT — "Bombay Modern"
+   Scoped to Views/Home/Contact.cshtml only. Form-field styles
+   (.field, .btn-brass-block) come from forms.css, linked alongside
+   this file. Tokens come from site.css:root.
+=================================================== */
 
-.contact-wrapper {
-    max-width: 1100px;
-    margin: 80px auto;
-    padding: 0 20px;
-    display: grid;
-    grid-template-columns: 1.1fr 0.9fr;
-    gap: 60px;
+.contact-page {
+    background: var(--stone);
+    padding: 72px 32px;
 }
 
-/* LEFT INFO */
+.contact-wrapper {
+    max-width: 1080px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 0.85fr 1.15fr;
+    border: 1px solid var(--line);
+    background: var(--paper);
+}
+
+/* -------- LEFT: INFO -------- */
+.contact-info {
+    background: var(--ink);
+    color: var(--paper);
+    padding: 52px 44px;
+}
+
 .contact-info h1 {
-    font-size: 36px;
-    font-weight: 800;
-    color: #0f172a;
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: clamp(26px, 3vw, 34px);
+    margin: 14px 0 16px;
 }
 
 .contact-info .subtitle {
-    margin-top: 12px;
-    font-size: 16px;
-    color: #475569;
-    max-width: 420px;
+    color: rgba(251, 249, 244, 0.68);
+    font-size: 14px;
+    line-height: 1.7;
+    max-width: 34ch;
+    margin: 0 0 44px;
 }
 
 .contact-details {
-    margin-top: 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 22px;
+    border-top: 1px solid var(--line-on-ink);
 }
 
 .contact-item {
-    display: flex;
-    align-items: center;
-    gap: 14px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--line-on-ink);
 }
 
-    .contact-item .icon {
-        font-size: 22px;
-    }
+.contact-item label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--brass);
+    margin-bottom: 6px;
+}
 
-    .contact-item label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #64748b;
-        display: block;
-    }
+.contact-item a,
+.contact-item span {
+    color: var(--paper);
+    text-decoration: none;
+    font-size: 15px;
+    font-family: var(--display);
+    font-weight: 500;
+}
 
-    .contact-item a,
-    .contact-item span {
-        font-size: 15px;
-        color: #0f172a;
-        text-decoration: none;
-        font-weight: 600;
-    }
+.contact-item a:hover { color: var(--brass); }
 
-/* FORM CARD */
+/* icons dropped in favor of the uppercase label pattern used elsewhere
+   in the design system, rather than emoji section markers */
+.contact-item .icon { display: none; }
+
+/* -------- RIGHT: FORM -------- */
 .contact-form-card {
-    background: #ffffff;
-    border-radius: 18px;
-    padding: 32px;
-    box-shadow: 0 30px 60px rgba(15, 23, 42, 0.1);
+    background: var(--paper);
+    padding: 52px 44px;
 }
 
-    .contact-form-card h3 {
-        font-size: 22px;
-        font-weight: 700;
-        margin-bottom: 22px;
-        color: #0f172a;
-    }
-
-.form-group {
-    margin-bottom: 16px;
+.contact-form-card h3 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 19px;
+    margin: 0 0 28px;
 }
 
-    .form-group label {
-        font-size: 13px;
-        font-weight: 600;
-        color: #475569;
-        display: block;
-        margin-bottom: 6px;
-    }
-
-    .form-group input,
-    .form-group textarea {
-        width: 100%;
-        padding: 12px 14px;
-        border-radius: 12px;
-        border: 1px solid #dbe2ea;
-        font-size: 14px;
-    }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
-        }
-
-/* SUBMIT BUTTON */
-.btn-submit {
-    width: 100%;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #fff;
-    padding: 14px;
-    border-radius: 14px;
-    border: none;
-    font-weight: 700;
-    margin-top: 10px;
-    cursor: pointer;
-    box-shadow: 0 14px 32px rgba(37, 99, 235, 0.35);
-}
-
-    .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 18px 40px rgba(37, 99, 235, 0.45);
-    }
-
-.form-note {
-    margin-top: 12px;
-    font-size: 13px;
-    color: #64748b;
-    text-align: center;
-}
-
-/* RESPONSIVE */
 @media (max-width: 900px) {
-    .contact-wrapper {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
+    .contact-page { padding: 48px 20px; }
+    .contact-wrapper { grid-template-columns: 1fr; }
+    .contact-info, .contact-form-card { padding: 40px 28px; }
 }

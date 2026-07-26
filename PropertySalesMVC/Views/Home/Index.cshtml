@@ -1,37 +1,113 @@
-﻿@{
+@model List<PropertyViewModel>
+@{
     ViewData["Title"] = "Ronak Estate - Find Your Dream Home";
+    ViewData["TransparentHeader"] = true;
+    string whatsAppNumber = ViewBag.WhatsAppNumber ?? "";
+    string ctaMessage = Uri.EscapeDataString("Hi, I'd like to know more about your properties.");
+
+    // Panel only exists when there's Featured content — no decorative
+    // placeholder. When empty, the panel is omitted entirely and the
+    // copy column expands full-width (.hero-inner.no-panel in home.css)
+    // instead of sitting narrow next to dead space. Looping through
+    // empty space to repeat 1-3 cards looks broken rather than
+    // intentional, so the auto-scroll only kicks in once there's enough
+    // content for continuous motion to feel natural.
+    bool hasPanelContent = Model != null && Model.Count > 0;
+    bool shouldScroll = Model != null && Model.Count >= 4;
+
+    void RenderFeaturedCard(PropertyViewModel p)
+    {
+        <a class="featured-card" href="@Url.Action("PropertyDetails", "Property", new { id = p.PropertyId })" target="_blank" rel="noopener">
+            <div class="thumb">
+                <img src="@p.ImagePath" alt="@p.Title" loading="lazy" onerror="this.onerror=null;this.src='/images/no-image.jpg';" />
+            </div>
+            <div class="body">
+                <p class="loc">@p.Location</p>
+                <h4 class="title">@p.Title</h4>
+                <p class="price tabular">₹ @p.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))</p>
+            </div>
+        </a>
+    }
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/landing.css" />
+    <link rel="stylesheet" href="~/css/listing-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
 }
 
-<section class="hero hero-video">
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-inner @(hasPanelContent ? "" : "no-panel")">
+        <div class="hero-copy">
+            <span class="eyebrow">Borivali &amp; Kandivali, Mumbai</span>
 
-    <video class="hero-bg-video"
-           autoplay muted loop playsinline preload="metadata"
-           poster="/images/hero-fallback.jpg">
-        <source src="/videos/realestate-timelapse.mp4" type="video/mp4" />
-    </video>
+            <h1>A place that<br /><span class="gold-accent">actually</span> fits<br />your life.</h1>
 
-    <div class="hero-overlay"></div>
+            <div class="mode-tabs">
+                <button id="btnBuy" onclick="loadProperties('Buy', this)">Buy</button>
+                <button id="btnRent" onclick="loadProperties('Rent', this)">Rent</button>
+                <button id="btnSell" onclick="loadSell()">Sell</button>
+            </div>
 
-    <div class="hero-content">
+            <p class="lede">Verified listings, honest pricing, and a founder who answers his own WhatsApp. No call centre, no runaround.</p>
 
-        <h1 id="mainHeading">
-            Find Your Place. <span class="gold-accent">Live Better.</span>
-        </h1>
+            <div class="hero-actions">
+                <button type="button" class="btn-brass" onclick="scrollToContent()">View Listings</button>
+                <a class="btn-ghost-onink" href="https://wa.me/@whatsAppNumber?text=@ctaMessage" target="_blank" rel="noopener">Chat on WhatsApp →</a>
+            </div>
 
-        <div class="hero-switch">
-            <button onclick="loadProperties('Buy', this)">Buy</button>
-            <button onclick="loadProperties('Rent', this)">Rent</button>
-            <button onclick="loadSell()">Sell</button>
+            <div class="full-rule"></div>
         </div>
 
-        <p id="modeSubText">
-            Buy, rent, or sell premium properties with confidence
-        </p>
+        @if (hasPanelContent)
+        {
+            <div class="hero-panel">
+                <div class="featured-box">
+                    <div class="panel-head">
+                        <span class="eyebrow">Featured</span>
+                        @if (shouldScroll)
+                        {
+                            <span class="count">Hover to pause</span>
+                        }
+                    </div>
 
+                    <div class="featured-track @(shouldScroll ? "scrolling" : "is-static")">
+                        @foreach (var p in Model!)
+                        {
+                            RenderFeaturedCard(p);
+                        }
+                        @if (shouldScroll)
+                        {
+                            @* Duplicate the same set once so the CSS loop (translateY(-50%)) is seamless. *@
+                            @foreach (var p in Model!)
+                            {
+                                RenderFeaturedCard(p);
+                            }
+                        }
+                    </div>
+
+                    <div class="fade-bottom"></div>
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+<!-- FACT STRIP -->
+<section class="fact-strip">
+    <div class="inner">
+        <div class="fact">
+            <span class="eyebrow">Since</span>
+            <strong>Borivali, est. local</strong>
+        </div>
+        <div class="fact">
+            <span class="eyebrow">Response</span>
+            <strong>Direct on WhatsApp</strong>
+        </div>
+        <div class="fact">
+            <span class="eyebrow">Services</span>
+            <strong>Buy · Rent · Sell</strong>
+        </div>
     </div>
 </section>
 
@@ -47,7 +123,59 @@
 <!-- CONTENT -->
 <div id="contentAnchor"></div>
 
-<section id="propertyContainer"></section>
+<section class="properties-section">
+    <div class="section-head">
+        <div>
+            <span class="eyebrow">Current listings</span>
+            <h2 id="listingsHeading">Rent in Borivali &amp; Kandivali</h2>
+        </div>
+    </div>
+
+    <div id="propertyContainer"></div>
+</section>
+
+<!-- WHY US -->
+<section class="why-us-section">
+    <div class="why-us-inner">
+        <div class="section-head">
+            <span class="eyebrow">How it works</span>
+            <h2>From first message to the keys</h2>
+        </div>
+
+        <div class="why-list">
+            <div class="why-row">
+                <span class="idx">01</span>
+                <h3>You message us</h3>
+                <p>Straight to WhatsApp — describe what you're looking for, or ask about a specific listing. Usually answered within a few hours.</p>
+            </div>
+            <div class="why-row">
+                <span class="idx">02</span>
+                <h3>We verify, you view</h3>
+                <p>Every listing is checked and photographed by us before it goes live — what you see is what's actually there.</p>
+            </div>
+            <div class="why-row">
+                <span class="idx">03</span>
+                <h3>Local, not generic</h3>
+                <p>We work Borivali and Kandivali specifically — building lines, resale rates, and which societies are worth a second look.</p>
+            </div>
+            <div class="why-row">
+                <span class="idx">04</span>
+                <h3>One relationship, all three</h3>
+                <p>Buying, renting, or selling — the same team handles it, so context isn't lost between departments that don't talk to each other.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA BAND -->
+<section class="cta-band">
+    <span class="eyebrow">Ready when you are</span>
+    <h2>Tell us what you're looking for.</h2>
+    <p>A real reply from a real person — usually within a few hours, not a ticket number.</p>
+    <a class="btn-brass" href="https://wa.me/@whatsAppNumber?text=@ctaMessage" target="_blank" rel="noopener">
+        Message on WhatsApp
+    </a>
+</section>
 
 @section Scripts {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -56,33 +184,32 @@
     var currentMode = null;
     var currentPage = 1;
 
-    function loadProperties(mode, el) {
+    var listingHeadings = {
+        Buy: "Buy in Borivali & Kandivali",
+        Rent: "Rent in Borivali & Kandivali"
+    };
+
+    function loadProperties(mode, el, scrollOnLoad) {
+
+        if (scrollOnLoad === undefined) scrollOnLoad = true;
 
         currentMode = mode;
         currentPage = 1;
 
-        $('#mainHeading').html(
-            'Explore Properties for <span class="gold-accent">' + mode + '</span>'
-        );
+        $('#listingsHeading').text(listingHeadings[mode] || (mode + ' in Borivali & Kandivali'));
 
-        $('#modeSubText').text(
-            'Handpicked premium properties available for ' + mode.toLowerCase()
-        );
-
-        $('.hero-switch button').removeClass('active');
-        el.classList.add('active');
+        $('.mode-tabs button').removeClass('active');
+        if (el) el.classList.add('active');
 
         $('#filterContainer').show();
         $('#propertyContainer').empty();
         $('#propertyLoader').show();
 
-        // ✅ Load filter ONLY into filterContainer
         $.get('/Property/FilterPartial', { mode: mode })
             .done(function (html) {
                 $('#filterContainer').html(html);
             });
 
-        // ✅ Load listings
         $.ajax({
             url: '/Property/ListingPartial',
             type: 'GET',
@@ -93,7 +220,7 @@
         })
         .done(function (html) {
             $('#propertyContainer').html(html);
-            scrollToContent();
+            if (scrollOnLoad) scrollToContent();
         })
         .always(function () {
             $('#propertyLoader').hide();
@@ -166,37 +293,33 @@
 
     function loadSell() {
 
-        $('.hero-switch button').removeClass('active');
-        $('.hero-switch button:last-child').addClass('active');
+        $('.mode-tabs button').removeClass('active');
+        $('#btnSell').addClass('active');
 
         $('#filterContainer').hide();
-
-        $('#mainHeading').html(
-            'Submit Property for <span class="gold-accent">Sale</span>'
-        );
-
-        $('#modeSubText').text(
-            'Share your property details and we will contact you'
-        );
+        $('#listingsHeading').text('Sell With Ronak Estate');
 
         $('#propertyContainer').load('/Property/SalePartial', function () {
-            scrollToContent(); // ✅ FIX
+            scrollToContent();
         });
     }
 
     function scrollToContent() {
+        const anchor = document.getElementById("contentAnchor");
+        if (!anchor) return;
 
-    const anchor = document.getElementById("contentAnchor");
-    if (!anchor) return;
+        const yOffset = -20;
+        const y = anchor.getBoundingClientRect().top + window.pageYOffset + yOffset;
 
-    const yOffset = -20; // small breathing space (adjust if needed)
-    const y = anchor.getBoundingClientRect().top + window.pageYOffset + yOffset;
+        window.scrollTo({
+            top: y,
+            behavior: "smooth"
+        });
+    }
 
-    window.scrollTo({
-        top: y,
-        behavior: "smooth"
+    // Populate the page with listings immediately instead of waiting for a click.
+    document.addEventListener("DOMContentLoaded", function () {
+        loadProperties('Rent', document.getElementById('btnRent'), false);
     });
-}
-
 </script>
 }

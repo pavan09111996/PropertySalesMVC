@@ -21,6 +21,8 @@ public class AddPropertyViewModel
     [Required]
     public int BHK { get; set; }
 
+    public bool IsFeatured { get; set; }
+
     // 🔥 Multiple Images
     [Required]
     public List<IFormFile> Images { get; set; } = new();

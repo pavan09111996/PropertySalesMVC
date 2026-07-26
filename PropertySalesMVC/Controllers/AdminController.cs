@@ -1,394 +1,233 @@
-﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using PropertySalesMVC.Filters;
 using PropertySalesMVC.Helpers;
 using PropertySalesMVC.Models;
-using System.Data.SqlClient;
-using System.Diagnostics;
-using System.IO.Pipelines;
+using PropertySalesMVC.Services;
 
 namespace PropertySalesMVC.Controllers
 {
-    
     public class AdminController : Controller
     {
-        private readonly DbHelper _db;
-        public AdminController(DbHelper db)
+        private readonly IAuthService _authService;
+        private readonly IPropertyService _propertyService;
+        private readonly ILocationService _locationService;
+        private readonly IAdminService _adminService;
+        private readonly IEnquiryService _enquiryService;
+        private readonly IErrorLogService _errorLogService;
+
+        public AdminController(
+            IAuthService authService,
+            IPropertyService propertyService,
+            ILocationService locationService,
+            IAdminService adminService,
+            IEnquiryService enquiryService,
+            IErrorLogService errorLogService)
         {
-            _db = db;
+            _authService = authService;
+            _propertyService = propertyService;
+            _locationService = locationService;
+            _adminService = adminService;
+            _enquiryService = enquiryService;
+            _errorLogService = errorLogService;
         }
 
-
         [HttpPost]
-        public IActionResult Login(string adminId, string password)
+        public async Task<IActionResult> Login(string adminId, string password)
         {
-            bool isValidAdmin = false;
+            var result = await _authService.ValidateAdminAsync(adminId, password);
 
-            using (SqlConnection con = new SqlConnection("Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
+            if (result.Success)
             {
-                con.Open();
-
-                string query = @"
-            SELECT COUNT(1)
-            FROM AdminLoginDetails
-            WHERE AdminID = @AdminID
-              AND Password = @Password
-              AND IsActive = 1";
-
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    cmd.Parameters.AddWithValue("@AdminID", adminId);
-                    cmd.Parameters.AddWithValue("@Password", password);
-
-                    isValidAdmin = Convert.ToInt32(cmd.ExecuteScalar()) > 0;
-                }
-            }
-
-            if (isValidAdmin)
-            {
-                // ✅ CREATE SESSION
                 HttpContext.Session.SetString(SessionKeys.AdminName, adminId);
                 HttpContext.Session.SetString(SessionKeys.IsAdminLoggedIn, "true");
+                HttpContext.Session.SetString(SessionKeys.Role, result.Role ?? Roles.Admin);
 
-                return Json(new { success = true });
+                return Json(new { success = true, role = result.Role });
             }
 
             return Json(new
             {
                 success = false,
-                message = "Invalid Admin ID or Password"
+                message = result.Message
             });
         }
 
-
         [AdminAuthorize]
-public IActionResult Dashboard()
-{
-    var properties = new List<PropertyViewModel>();
-
-    using (SqlConnection con = new SqlConnection(
-        "Data Source=SQL6031.site4now.net,1433;" +
-        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-        "User ID=db_ac36b8_ronakrealestate00_admin;" +
-        "Password=Ronak0910#;" +
-        "Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-    {
-        string query = @"
-        SELECT 
-            p.Id,
-            p.Title,
-            ISNULL(lm.Location,'') AS Location,
-            p.Price,
-            p.Description,
-            img.ImagePath,
-            img.ImageBase64
-        FROM Properties p
-        LEFT JOIN LocationMaster lm ON p.Location = lm.Id
-        OUTER APPLY (
-            SELECT TOP 1 ImagePath, ImageBase64
-            FROM PropertyImages
-            WHERE PropertyId = p.Id
-            ORDER BY p.Id
-        ) img
-        WHERE p.IsActive = 1";
-
-        SqlCommand cmd = new SqlCommand(query, con);
-        con.Open();
-
-        using (SqlDataReader reader = cmd.ExecuteReader())
+        public async Task<IActionResult> Dashboard(string? search, int? lookingFor, int page = 1)
         {
-            while (reader.Read())
+            var filter = new AdminPropertyFilter
             {
-                var images = new List<string>();
+                Search = string.IsNullOrWhiteSpace(search) ? null : search.Trim(),
+                LookingFor = lookingFor,
+                Page = page <= 0 ? 1 : page
+            };
 
-                // ✅ Prefer ImagePath
-                if (!reader.IsDBNull(5))
-                {
-                    images.Add(reader.GetString(5)); // ImagePath
-                }
-                // 🔁 Fallback to Base64
-                else if (!reader.IsDBNull(6))
-                {
-                    images.Add("data:image/jpeg;base64," + reader.GetString(6));
-                }
+            var (items, totalCount) = await _propertyService.GetDashboardPropertiesAsync(filter);
 
-                properties.Add(new PropertyViewModel
-                {
-                    PropertyId = reader.GetInt32(0),
-                    Title = reader.GetString(1),
-                    Location = reader.GetString(2),
-                    Price = reader.GetDecimal(3),
-                    Description = reader.GetString(4),
-                    Images = images // 🔥 use unified Images list
-                });
-            }
+            ViewBag.PropertyCount = totalCount;
+            ViewBag.Search = filter.Search;
+            ViewBag.LookingFor = filter.LookingFor;
+            ViewBag.CurrentPage = filter.Page;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
+
+            return View(items);
         }
-    }
-
-    ViewBag.PropertyCount = properties.Count;
-    return View(properties);
-}
-
-
 
         [HttpGet]
         [AdminAuthorize]
-        public IActionResult AddProperty()
+        public async Task<IActionResult> AddProperty()
         {
-            List<LocationMaster> locationMasterList = new List<LocationMaster>();
-
-            using (SqlConnection con = new SqlConnection(
-                "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;Connection Timeout=30;"))
-            {
-                string query = @"SELECT Id, Location FROM LocationMaster WHERE IsActive = 1";
-
-                using (SqlCommand cmd = new SqlCommand(query, con))
-                {
-                    con.Open();
-
-                    using (SqlDataReader reader = cmd.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            locationMasterList.Add(new LocationMaster
-                            {
-                                Id = Convert.ToInt32(reader["Id"]),
-                                LocationName = reader["Location"].ToString()
-                            });
-                        }
-                    }
-                }
-            }
-
-            ViewBag.Locations = locationMasterList;
+            ViewBag.Locations = await _propertyService.GetLocationsForFormAsync();
             return View();
         }
-[HttpPost]
-[AdminAuthorize]
-[ValidateAntiForgeryToken]
-public IActionResult AddProperty(AddPropertyViewModel model)
-{
-    if (!ModelState.IsValid)
-    {
-        TempData["ErrorMessage"] = "Please fill all required fields";
-        return RedirectToAction("AddProperty");
-    }
 
-    int propertyId;
-
-    using (SqlConnection con = new SqlConnection(
-        "Data Source=SQL6031.site4now.net,1433;Initial Catalog=db_ac36b8_ronakrealestate00;User ID=db_ac36b8_ronakrealestate00_admin;Password=Ronak0910#;Encrypt=False;TrustServerCertificate=True;"))
-    {
-        string query = @"
-            INSERT INTO Properties
-            (Title, Location, Price, Description, LookingFor, BHK)
-            OUTPUT INSERTED.Id
-            VALUES
-            (@Title, @Location, @Price, @Description, @LookingFor, @BHK)";
-
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@Title", model.Title);
-        cmd.Parameters.AddWithValue("@Location", model.Location);
-        cmd.Parameters.AddWithValue("@Price", model.Price);
-        cmd.Parameters.AddWithValue("@Description", model.Description);
-        cmd.Parameters.AddWithValue("@LookingFor", model.LookingFor);
-        cmd.Parameters.AddWithValue("@BHK", model.BHK);
-
-        con.Open();
-        propertyId = (int)cmd.ExecuteScalar();
-
-        /* ======================
-           SAVE IMAGES
-        ====================== */
-        if (model.Images != null && model.Images.Any())
+        [HttpPost]
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddProperty(AddPropertyViewModel model)
         {
-            string uploadRoot = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "properties",
-                propertyId.ToString());
-
-            Directory.CreateDirectory(uploadRoot);
-
-            foreach (var img in model.Images)
+            if (model.Video != null && model.Video.Length > UploadLimits.MaxVideoSizeBytes)
             {
-                string fileName = Guid.NewGuid() + Path.GetExtension(img.FileName);
-                string fullPath = Path.Combine(uploadRoot, fileName);
-
-                using var fs = new FileStream(fullPath, FileMode.Create);
-                img.CopyTo(fs);
-
-                string imagePath = $"/uploads/properties/{propertyId}/{fileName}";
-
-                SqlCommand imgCmd = new SqlCommand(
-                    "INSERT INTO PropertyImages (PropertyId, ImagePath) VALUES (@Pid, @Path)", con);
-                imgCmd.Parameters.AddWithValue("@Pid", propertyId);
-                imgCmd.Parameters.AddWithValue("@Path", imagePath);
-                imgCmd.ExecuteNonQuery();
+                ModelState.AddModelError(nameof(model.Video), "Video must be under 20MB — please compress it or trim the clip and try again.");
             }
-        }
 
-        /* ======================
-           SAVE VIDEO (OPTIONAL)
-        ====================== */
-        if (model.Video != null && model.Video.Length > 0)
-        {
-            string videoDir = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                "uploads",
-                "properties",
-                propertyId.ToString(),
-                "video");
-
-            Directory.CreateDirectory(videoDir);
-
-            string videoName = "property-video" + Path.GetExtension(model.Video.FileName);
-            string videoPath = Path.Combine(videoDir, videoName);
-
-            using var vs = new FileStream(videoPath, FileMode.Create);
-            model.Video.CopyTo(vs);
-
-            SqlCommand vidCmd = new SqlCommand(
-                "UPDATE Properties SET VideoPath=@Video WHERE Id=@Id", con);
-            vidCmd.Parameters.AddWithValue("@Video",
-                $"/uploads/properties/{propertyId}/video/{videoName}");
-            vidCmd.Parameters.AddWithValue("@Id", propertyId);
-            vidCmd.ExecuteNonQuery();
-        }
-    }
-
-    TempData["PropertyAddedMessage"] = "Property added successfully";
-    return RedirectToAction("Dashboard");
-}
-
-[HttpPost]
-[AdminAuthorize]
-[ValidateAntiForgeryToken]
-public IActionResult DeleteProperty(int propertyId)
-{
-    string connectionString =
-        "Data Source=SQL6031.site4now.net,1433;" +
-        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-        "User ID=db_ac36b8_ronakrealestate00_admin;" +
-        "Password=Ronak0910#;" +
-        "Encrypt=False;TrustServerCertificate=True;";
-
-    using SqlConnection con = new SqlConnection(connectionString);
-    con.Open();
-
-    using SqlTransaction tran = con.BeginTransaction();
-
-    try
-    {
-        /* ===============================
-           1️⃣ FETCH IMAGE + VIDEO PATHS
-        =============================== */
-        List<string> imagePaths = new();
-        string? videoPath = null;
-
-        // Images
-        using (SqlCommand imgCmd = new SqlCommand(
-            "SELECT ImagePath FROM PropertyImages WHERE PropertyId = @Id",
-            con, tran))
-        {
-            imgCmd.Parameters.AddWithValue("@Id", propertyId);
-
-            using SqlDataReader reader = imgCmd.ExecuteReader();
-            while (reader.Read())
+            if (!ModelState.IsValid)
             {
-                if (!reader.IsDBNull(0))
-                    imagePaths.Add(reader.GetString(0));
+                ViewBag.Locations = await _propertyService.GetLocationsForFormAsync();
+                return View(model);
             }
+
+            await _propertyService.AddPropertyAsync(model);
+
+            TempData["PropertyAddedMessage"] = "Property added successfully";
+            return RedirectToAction("Dashboard");
         }
 
-        // Video
-        using (SqlCommand vidCmd = new SqlCommand(
-            "SELECT VideoPath FROM Properties WHERE Id = @Id",
-            con, tran))
+        [HttpPost]
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProperty(int propertyId)
         {
-            vidCmd.Parameters.AddWithValue("@Id", propertyId);
-            videoPath = vidCmd.ExecuteScalar() as string;
+            await _propertyService.DeletePropertyAsync(propertyId);
+
+            TempData["PropertyDeletedMessage"] = "Property permanently deleted.";
+            return RedirectToAction("Dashboard");
         }
 
-        /* ===============================
-           2️⃣ DELETE FILES FROM DISK
-        =============================== */
-        foreach (var path in imagePaths)
+        [AdminAuthorize]
+        public async Task<IActionResult> Locations()
         {
-            string fullPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                path.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
-            );
-
-            if (System.IO.File.Exists(fullPath))
-                System.IO.File.Delete(fullPath);
+            var locations = await _locationService.GetAllForAdminAsync();
+            return View(locations);
         }
 
-        if (!string.IsNullOrEmpty(videoPath))
+        [HttpPost]
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateLocation(string name)
         {
-            string fullVideoPath = Path.Combine(
-                Directory.GetCurrentDirectory(),
-                "wwwroot",
-                videoPath.TrimStart('/').Replace("/", Path.DirectorySeparatorChar.ToString())
-            );
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                await _locationService.CreateAsync(name.Trim());
+                TempData["LocationMessage"] = "Location added.";
+            }
 
-            if (System.IO.File.Exists(fullVideoPath))
-                System.IO.File.Delete(fullVideoPath);
+            return RedirectToAction("Locations");
         }
 
-        /* ===============================
-           3️⃣ DELETE IMAGE RECORDS
-        =============================== */
-        using (SqlCommand delImagesCmd = new SqlCommand(
-            "DELETE FROM PropertyImages WHERE PropertyId = @Id",
-            con, tran))
+        [HttpPost]
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateLocation(int id, string name, bool isActive)
         {
-            delImagesCmd.Parameters.AddWithValue("@Id", propertyId);
-            delImagesCmd.ExecuteNonQuery();
+            if (!string.IsNullOrWhiteSpace(name))
+            {
+                await _locationService.UpdateAsync(id, name.Trim(), isActive);
+                TempData["LocationMessage"] = "Location updated.";
+            }
+
+            return RedirectToAction("Locations");
         }
 
-        /* ===============================
-           4️⃣ SOFT DELETE PROPERTY
-        =============================== */
-        using (SqlCommand delPropertyCmd = new SqlCommand(@"
-            UPDATE Properties
-            SET IsActive = 0,
-                VideoPath = NULL
-            WHERE Id = @Id", con, tran))
+        [HttpGet]
+        [AdminAuthorize]
+        public async Task<IActionResult> Profile()
         {
-            delPropertyCmd.Parameters.AddWithValue("@Id", propertyId);
-            delPropertyCmd.ExecuteNonQuery();
+            var details = await _adminService.GetAdminDetailsForLayoutAsync();
+            var contact = await _adminService.GetActiveAdminContactAsync();
+
+            var model = new AdminProfileViewModel
+            {
+                CompanyName = details?.CompanyName,
+                OwnerName = details?.OwnerName,
+                Designation = details?.Designation,
+                HeadOfficeTitle = details?.HeadOfficeTitle,
+                HeadOfficeAddress = details?.HeadOfficeAddress,
+                BranchOfficeTitle = details?.BranchOfficeTitle,
+                BranchOfficeAddress = details?.BranchOfficeAddress,
+                InstagramUrl = details?.InstagramUrl,
+                FacebookUrl = details?.FacebookUrl,
+
+                AdminName = contact?.AdminName,
+                Phone = contact?.Phone,
+                WhatsApp = contact?.WhatsApp,
+                Email = contact?.Email
+            };
+
+            return View(model);
         }
 
-        /* ===============================
-           5️⃣ OPTIONAL: DELETE PROPERTY FOLDER
-        =============================== */
-        string propertyFolder = Path.Combine(
-            Directory.GetCurrentDirectory(),
-            "wwwroot",
-            "uploads",
-            "properties",
-            propertyId.ToString());
+        [HttpPost]
+        [AdminAuthorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Profile(AdminProfileViewModel model)
+        {
+            await _adminService.UpdateAdminDetailsAsync(new AdminDetails
+            {
+                CompanyName = model.CompanyName ?? "",
+                OwnerName = model.OwnerName ?? "",
+                Designation = model.Designation ?? "",
+                HeadOfficeTitle = model.HeadOfficeTitle ?? "",
+                HeadOfficeAddress = model.HeadOfficeAddress ?? "",
+                BranchOfficeTitle = model.BranchOfficeTitle ?? "",
+                BranchOfficeAddress = model.BranchOfficeAddress ?? "",
+                InstagramUrl = model.InstagramUrl ?? "",
+                FacebookUrl = model.FacebookUrl ?? ""
+            });
 
-        if (Directory.Exists(propertyFolder))
-            Directory.Delete(propertyFolder, recursive: true);
+            await _adminService.UpdateAdminContactAsync(new AdminContactInfo
+            {
+                AdminName = model.AdminName ?? "",
+                Phone = model.Phone ?? "",
+                WhatsApp = model.WhatsApp ?? "",
+                Email = model.Email ?? ""
+            });
 
-        tran.Commit();
+            TempData["ProfileMessage"] = "Profile updated successfully.";
+            return RedirectToAction("Profile");
+        }
 
-        TempData["PropertyDeletedMessage"] = "Property deleted successfully.";
-        return RedirectToAction("Dashboard");
-    }
-    catch
-    {
-        tran.Rollback();
-        throw;
-    }
-}
+        [AdminAuthorize]
+        public async Task<IActionResult> Enquiries(int page = 1)
+        {
+            var (enquiries, totalCount) = await _enquiryService.GetEnquiriesAsync(page <= 0 ? 1 : page, 20);
 
+            ViewBag.CurrentPage = page <= 0 ? 1 : page;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / 20.0);
+
+            return View(enquiries);
+        }
+
+        [DeveloperAuthorize]
+        public async Task<IActionResult> ErrorLogs(int page = 1)
+        {
+            var (entries, totalCount) = await _errorLogService.GetErrorLogsAsync(page <= 0 ? 1 : page, 20);
+
+            ViewBag.CurrentPage = page <= 0 ? 1 : page;
+            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / 20.0);
+
+            return View(entries);
+        }
 
         public IActionResult Logout()
         {
@@ -398,42 +237,5 @@ public IActionResult DeleteProperty(int propertyId)
 
             return RedirectToAction("Index", "Home");
         }
-
-        [ResponseCache(Duration = 60 * 60)] // 1 hour cache
-public IActionResult PropertyImage(int propertyId)
-{
-    using (SqlConnection con = new SqlConnection(
-        "Data Source=SQL6031.site4now.net,1433;" +
-        "Initial Catalog=db_ac36b8_ronakrealestate00;" +
-        "User ID=db_ac36b8_ronakrealestate00_admin;" +
-        "Password=Ronak0910#;" +
-        "Encrypt=False;TrustServerCertificate=True;"))
-    {
-        string query = @"
-            SELECT TOP 1 ImageBase64
-            FROM PropertyImages
-            WHERE PropertyId = @PropertyId
-        ";
-
-        SqlCommand cmd = new SqlCommand(query, con);
-        cmd.Parameters.AddWithValue("@PropertyId", propertyId);
-
-        con.Open();
-        var result = cmd.ExecuteScalar();
-
-        if (result == null)
-        {
-            return PhysicalFile(
-                Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/images/no-image.png"),
-                "image/png");
-        }
-
-        byte[] bytes = Convert.FromBase64String(result.ToString());
-        return File(bytes, "image/jpeg");
-    }
-}
-
-
-
     }
 }

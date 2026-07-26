@@ -1,0 +1,68 @@
+@model List<PropertySalesMVC.Models.ErrorLogEntry>
+@{
+    ViewData["Title"] = "Error Logs";
+    Layout = "_AdminLayout";
+}
+
+<span class="eyebrow">Diagnostics</span>
+<h2 class="page-title">Error Logs</h2>
+<p class="text-muted">Unhandled exceptions and logged errors from the last 30 days (older entries are purged automatically).</p>
+
+@if (!Model.Any())
+{
+    <p class="text-muted">No errors logged. That's a good sign.</p>
+}
+else
+{
+    <table class="table table-bordered bg-white align-middle">
+        <thead>
+            <tr>
+                <th style="width:160px;">When</th>
+                <th style="width:90px;">Severity</th>
+                <th>Message</th>
+                <th style="width:200px;">Source</th>
+                <th style="width:180px;">Request Path</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr>
+                    <td>@entry.CreatedOn.ToString("dd MMM yyyy, HH:mm:ss")</td>
+                    <td>
+                        <span class="chip @(entry.Severity == "Critical" ? "chip-critical" : "chip-warning")">
+                            @entry.Severity
+                        </span>
+                    </td>
+                    <td>
+                        <div>@entry.Message</div>
+                        @if (!string.IsNullOrEmpty(entry.ExceptionType))
+                        {
+                            <div class="text-muted small">@entry.ExceptionType</div>
+                        }
+                        @if (!string.IsNullOrEmpty(entry.StackTrace))
+                        {
+                            <details class="mt-1">
+                                <summary class="small" style="cursor:pointer;color:var(--brass-deep);font-weight:600;">Stack trace</summary>
+                                <pre class="small mb-0" style="white-space:pre-wrap;">@entry.StackTrace</pre>
+                            </details>
+                        }
+                    </td>
+                    <td class="small">@entry.Source</td>
+                    <td class="small">@entry.RequestPath</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="pagination">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a class="page-btn @(i == ViewBag.CurrentPage ? "active" : "")"
+                   href="@Url.Action("ErrorLogs", new { page = i })">@i</a>
+            }
+        </div>
+    }
+}

@@ -1,43 +1,57 @@
-﻿<!DOCTYPE html>
+﻿@using PropertySalesMVC.Helpers
+@using Microsoft.AspNetCore.Http
+@{
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    string role = Context.Session.GetString(SessionKeys.Role) ?? "";
+    bool isDeveloper = role == Roles.Developer;
+
+    bool IsActive(string controller, string action) =>
+        currentController.Equals(controller, StringComparison.OrdinalIgnoreCase)
+        && currentAction.Equals(action, StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/admin.css" />
-    <link rel="stylesheet" href="~/css/admin-properties.css" />
-
-
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/admin-properties.css" asp-append-version="true" />
 
     @RenderSection("Styles", required: false)
 </head>
 <body>
 
-    <!-- TOP NAVBAR -->
-<nav class="navbar navbar-dark px-3 admin-navbar">
-        <span class="navbar-brand">Admin Dashboard</span>
-
-        <a href="/Admin/Logout" class="btn btn-outline-light btn-sm">
-            Logout
-        </a>
-    </nav>
-
-    <!-- LAYOUT -->
     <div class="admin-wrapper">
 
         <!-- SIDEBAR -->
         <aside class="admin-sidebar">
-            <h6 class="menu-title">Menu</h6>
+            <div class="admin-brand">
+                <div class="name">Ronak Estate</div>
+                <div class="sub">@(isDeveloper ? "Developer Panel" : "Admin Panel")</div>
+            </div>
 
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link active" href="/Admin/Dashboard">Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/Admin/AddProperty">Add Property</a>
-                </li>
+            <ul class="admin-nav">
+                @if (isDeveloper)
+                {
+                    <li><a class="nav-link @(IsActive("Admin", "ErrorLogs") ? "active" : "")" href="/Admin/ErrorLogs"><span class="dot"></span>Error Logs</a></li>
+                }
+                else
+                {
+                    <li><a class="nav-link @(IsActive("Admin", "Dashboard") ? "active" : "")" href="/Admin/Dashboard"><span class="dot"></span>Dashboard</a></li>
+                    <li><a class="nav-link @(IsActive("Admin", "AddProperty") ? "active" : "")" href="/Admin/AddProperty"><span class="dot"></span>Add Property</a></li>
+                    <li><a class="nav-link @(IsActive("Admin", "Locations") ? "active" : "")" href="/Admin/Locations"><span class="dot"></span>Locations</a></li>
+                    <li><a class="nav-link @(IsActive("Admin", "Enquiries") ? "active" : "")" href="/Admin/Enquiries"><span class="dot"></span>Enquiries</a></li>
+                    <li><a class="nav-link @(IsActive("Admin", "Profile") ? "active" : "")" href="/Admin/Profile"><span class="dot"></span>Profile</a></li>
+                }
             </ul>
+
+            <div class="admin-logout">
+                <a href="/Admin/Logout">Logout</a>
+            </div>
         </aside>
 
         <!-- CONTENT -->
@@ -46,11 +60,6 @@
         </main>
 
     </div>
-
-    <!-- FOOTER -->
-    <footer class="admin-footer">
-        © 2026 PropertySales | Admin Panel
-    </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     @RenderSection("Scripts", required: false)

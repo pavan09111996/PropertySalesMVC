@@ -35,7 +35,7 @@
                             <td>@item.Title</td>
                             <td>@item.Location</td>
                             <td class="fw-bold text-success">
-                                ₹ @item.Price
+                                ₹ @item.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
                             </td>
                             <td>@item.Description</td>
                         </tr>

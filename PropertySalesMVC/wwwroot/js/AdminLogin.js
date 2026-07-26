@@ -23,7 +23,7 @@
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                window.location.href = '/Admin/Dashboard';
+                window.location.href = data.role === 'Developer' ? '/Admin/ErrorLogs' : '/Admin/Dashboard';
             } else {
                 errorDiv.innerText = data.message;
             }

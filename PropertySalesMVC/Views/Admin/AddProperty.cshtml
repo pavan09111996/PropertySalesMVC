@@ -4,14 +4,19 @@
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
-<h2 class="mb-4">Add New Property</h2>
+<span class="eyebrow">New Listing</span>
+<h2 class="page-title mb-4">Add Property</h2>
 
 <form asp-action="AddProperty"
       asp-controller="Admin"
       method="post"
-      enctype="multipart/form-data">
+      enctype="multipart/form-data"
+      class="card p-4"
+      style="max-width:640px;">
 
-    @Html.AntiForgeryToken()  <!-- 🔥 REQUIRED -->
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="All" class="validation-summary"></div>
 
     <!-- Property Title -->
     <div class="mb-3">
@@ -23,20 +28,19 @@
     <div class="mb-3">
         <label class="form-label d-block">Looking For</label>
 
-        <div class="form-check form-check-inline">
-            <input asp-for="LookingFor"
-                   class="form-check-input"
-                   type="radio"
-                   value="1" />
-            <label class="form-check-label">Rent</label>
-        </div>
-
-        <div class="form-check form-check-inline">
-            <input asp-for="LookingFor"
-                   class="form-check-input"
-                   type="radio"
-                   value="2" />
-            <label class="form-check-label">Buy</label>
+        <div class="segmented">
+            <label>
+                <input asp-for="LookingFor" type="radio" value="1" />
+                Rent
+            </label>
+            <label>
+                <input asp-for="LookingFor" type="radio" value="2" />
+                Buy
+            </label>
+            <label>
+                <input asp-for="LookingFor" type="radio" value="3" />
+                Sell
+            </label>
         </div>
     </div>
 
@@ -50,6 +54,14 @@
             <option value="3">3 BHK</option>
             <option value="4">4 BHK</option>
         </select>
+    </div>
+
+    <!-- Featured -->
+    <div class="mb-3 form-check">
+        <input asp-for="IsFeatured" type="checkbox" class="form-check-input" />
+        <label class="form-check-label" asp-for="IsFeatured">
+            Featured — show in the auto-scrolling panel on the Home page
+        </label>
     </div>
 
     <!-- Location -->
@@ -93,6 +105,8 @@
                multiple
                accept=".jpg,.jpeg,.png,.webp"
                required />
+        <small class="text-muted">You can select several photos at once, or add more below — each appears as a thumbnail you can remove before saving.</small>
+        <div id="imageGrid" class="image-grid mt-2"></div>
     </div>
 
     <!-- Video -->
@@ -103,11 +117,89 @@
                class="form-control"
                accept="video/mp4,video/webm,video/ogg" />
         <small class="text-muted">
-            Max 1 video · Recommended under 20MB
+            Max 20MB · Max 1920px on the longer side
         </small>
+        <small id="videoError" class="d-block" style="color:var(--rust);"></small>
     </div>
 
     <button type="submit" class="btn btn-primary">
         Save Property
     </button>
 </form>
+
+<script>
+    const imagesInput = document.getElementById("Images");
+    const imageGrid = document.getElementById("imageGrid");
+    let selectedFiles = [];
+
+    imagesInput.addEventListener("change", function () {
+        Array.from(this.files).forEach(file => {
+            if (!file.type.startsWith("image/")) return;
+            selectedFiles.push(file);
+        });
+        rebuildGrid();
+        syncFiles();
+    });
+
+    function rebuildGrid() {
+        imageGrid.innerHTML = "";
+        selectedFiles.forEach((file, index) => renderImage(file, index));
+    }
+
+    function renderImage(file, index) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const card = document.createElement("div");
+            card.className = "image-card new";
+            card.innerHTML = `
+                <img src="${e.target.result}">
+                <button type="button" class="remove-btn" onclick="removeSelectedImage(${index})">×</button>
+            `;
+            imageGrid.appendChild(card);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeSelectedImage(index) {
+        selectedFiles.splice(index, 1);
+        rebuildGrid();
+        syncFiles();
+    }
+
+    function syncFiles() {
+        const dt = new DataTransfer();
+        selectedFiles.forEach(f => dt.items.add(f));
+        imagesInput.files = dt.files;
+    }
+
+    // Videos aren't resized server-side (no transcoding infra on this
+    // host), so this is the only place resolution ever gets checked —
+    // catch it here with real feedback rather than a silent-looking crop.
+    const videoInput = document.getElementById("Video");
+    const videoError = document.getElementById("videoError");
+    const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+    const MAX_VIDEO_DIMENSION = 1920;
+
+    videoInput.addEventListener("change", function () {
+        videoError.textContent = "";
+        const file = this.files[0];
+        if (!file) return;
+
+        if (file.size > MAX_VIDEO_BYTES) {
+            videoError.textContent = `That video is ${(file.size / (1024 * 1024)).toFixed(1)}MB — please compress it or trim the clip to under 20MB.`;
+            this.value = "";
+            return;
+        }
+
+        const probe = document.createElement("video");
+        probe.preload = "metadata";
+        probe.onloadedmetadata = function () {
+            URL.revokeObjectURL(probe.src);
+            if (probe.videoWidth > MAX_VIDEO_DIMENSION || probe.videoHeight > MAX_VIDEO_DIMENSION) {
+                videoError.textContent = `That video is ${probe.videoWidth}×${probe.videoHeight} — please export at 1920px or smaller on the longer side.`;
+                videoInput.value = "";
+            }
+        };
+        probe.src = URL.createObjectURL(file);
+    });
+</script>

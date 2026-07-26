@@ -1,0 +1,90 @@
+@model PropertySalesMVC.Models.AdminProfileViewModel
+@{
+    ViewData["Title"] = "Profile";
+    Layout = "_AdminLayout";
+}
+
+<span class="eyebrow">Settings</span>
+<h2 class="page-title">Company Profile</h2>
+
+@if (TempData["ProfileMessage"] != null)
+{
+    <div class="alert alert-success">@TempData["ProfileMessage"]</div>
+}
+
+<form asp-action="Profile" asp-controller="Admin" method="post" class="card p-4" style="max-width:700px;">
+    @Html.AntiForgeryToken()
+
+    <h5 class="mb-3">Company</h5>
+
+    <div class="mb-3">
+        <label class="form-label">Company Name</label>
+        <input asp-for="CompanyName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Owner Name</label>
+        <input asp-for="OwnerName" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Designation</label>
+        <input asp-for="Designation" class="form-control" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Head Office Title</label>
+            <input asp-for="HeadOfficeTitle" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Head Office Address</label>
+            <input asp-for="HeadOfficeAddress" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Branch Office Title</label>
+            <input asp-for="BranchOfficeTitle" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Branch Office Address</label>
+            <input asp-for="BranchOfficeAddress" class="form-control" />
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Instagram URL</label>
+            <input asp-for="InstagramUrl" class="form-control" />
+        </div>
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Facebook URL</label>
+            <input asp-for="FacebookUrl" class="form-control" />
+        </div>
+    </div>
+
+    <hr class="my-4" />
+    <h5 class="mb-3">Contact</h5>
+
+    <div class="mb-3">
+        <label class="form-label">Admin Name (shown to customers)</label>
+        <input asp-for="AdminName" class="form-control" />
+    </div>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Phone</label>
+            <input asp-for="Phone" class="form-control" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">WhatsApp (with country code, no +)</label>
+            <input asp-for="WhatsApp" class="form-control" placeholder="919876543210" />
+        </div>
+        <div class="col-md-4 mb-3">
+            <label class="form-label">Email</label>
+            <input asp-for="Email" class="form-control" />
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Profile</button>
+</form>

@@ -33,14 +33,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 
     <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" asp-append-version="true" />
 
     <!-- Font Awesome -->
     <link rel="stylesheet"
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
     <!-- Global Styles -->
-    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
     <!-- Page Styles -->
     @RenderSection("Styles", required: false)
@@ -48,19 +48,20 @@
     <script src="~/js/adminlogin.js"></script>
 </head>
 
-<body>
+<body class="@(ViewData["TransparentHeader"] as bool? == true ? "has-transparent-header" : "")">
 
     <!-- ===============================
          HEADER / NAVBAR
     ================================ -->
-    <header class="site-header">
+    <header class="site-header" id="siteHeader">
         <nav class="navbar navbar-expand-lg container">
 
             <!-- LOGO -->
-            <a class="navbar-brand d-flex align-items-center" href="/">
-                <img src="~/images/ronak-logo.png"
+            <a class="navbar-brand" href="/">
+                <img src="~/images/ronak-logo-wordmark.png"
                      alt="Ronak Estate"
                      class="logo" />
+                <span class="brand-tagline">Estate Consultant</span>
             </a>
 
             <!-- MOBILE TOGGLER -->
@@ -77,6 +78,18 @@
 
                     <li class="nav-item">
                         <a class="nav-link" href="/">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Property/Buy">Buy</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Property/Rent">Rent</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/Property/Sell">Sell</a>
                     </li>
 
                     <li class="nav-item">
@@ -111,18 +124,29 @@
         <div class="container">
             <div class="row text-center text-md-start">
 
-                <div class="col-md-4 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <h5 class="footer-title">@ViewBag.CompanyName</h5>
                     <p class="mb-1 fw-semibold">@ViewBag.OwnerName</p>
                     <p class="text-muted">@ViewBag.Designation</p>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
+                    <h6 class="footer-heading">Quick Links</h6>
+                    <ul class="footer-links list-unstyled">
+                        <li><a href="/">Home</a></li>
+                        <li><a href="/Property/Buy">Buy</a></li>
+                        <li><a href="/Property/Rent">Rent</a></li>
+                        <li><a href="/Property/Sell">Sell</a></li>
+                        <li><a href="/Home/Contact">Contact</a></li>
+                    </ul>
+                </div>
+
+                <div class="col-lg-3 col-md-6 mb-4">
                     <h6 class="footer-heading">@ViewBag.HeadOfficeTitle</h6>
                     <p class="footer-text">@ViewBag.HeadOfficeAddress</p>
                 </div>
 
-                <div class="col-md-4 mb-4">
+                <div class="col-lg-3 col-md-6 mb-4">
                     <h6 class="footer-heading">@ViewBag.BranchOfficeTitle</h6>
                     <p class="footer-text">@ViewBag.BranchOfficeAddress</p>
                 </div>
@@ -217,6 +241,16 @@
                     document.getElementById("AdminPassword").value = "";
                 });
             }
+
+            // Solidifies the header once the page scrolls past the hero.
+            // No-op visually on pages without body.has-transparent-header.
+            var header = document.getElementById("siteHeader");
+            function onHeaderScroll() {
+                if (window.scrollY > 40) header.classList.add("is-solid");
+                else header.classList.remove("is-solid");
+            }
+            document.addEventListener("scroll", onHeaderScroll, { passive: true });
+            onHeaderScroll();
         });
     </script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

@@ -1,32 +1,27 @@
 @model PropertyViewModel
 
-<div class="property-card">
+<a href="@Url.Action("PropertyDetails", "Property", new { id = Model.PropertyId })"
+   class="property-card"
+   target="_blank"
+   rel="noopener">
 
     <!-- IMAGE -->
     <div class="property-image">
-
-        <span class="featured-badge">Featured</span>
+        <span class="featured-badge">@Model.BHK BHK</span>
 
         <img
             src="@Model.ImagePath"
             alt="@Model.Title"
             loading="lazy"
-            class="property-img"
             onerror="this.onerror=null;this.src='/images/no-image.jpg';" />
     </div>
 
     <!-- BODY -->
     <div class="property-body">
 
+        <p class="property-location">@Model.Location</p>
+
         <h3 class="property-title">@Model.Title</h3>
-
-        <p class="property-location">
-            📍 @Model.Location
-        </p>
-
-        <div class="property-price">
-            ₹ @Model.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
-        </div>
 
         <p class="property-desc">
             @(string.IsNullOrWhiteSpace(Model.Description)
@@ -36,12 +31,11 @@
                     : Model.Description)
         </p>
 
-        <a href="@Url.Action("PropertyDetails", "Property", new { id = Model.PropertyId })"
-           class="btn-primary"
-           target="_blank"
-           rel="noopener">
-            View Details
-        </a>
+        <div class="property-footer">
+            <p class="property-price tabular">
+                ₹ @Model.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
+            </p>
+        </div>
 
     </div>
-</div>
+</a>

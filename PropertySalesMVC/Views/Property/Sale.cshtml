@@ -1,34 +1,48 @@
-﻿@{
+@model PropertySalesMVC.Models.PropertyViewModel
+@{
     ViewData["Title"] = "Sell Property - Ronak Estate";
 }
 
-<link rel="stylesheet" href="~/css/landing.css" />
+<link rel="stylesheet" href="~/css/forms.css" asp-append-version="true" />
 
-<section class="properties-section">
-    <h2 class="section-title">Submit Property for Sale</h2>
+<section class="form-page">
+    <div class="form-shell">
+        @* No eyebrow/h1 here on purpose: this view doubles as a partial
+           (SalePartial) injected into Home's #propertyContainer, right
+           below Home's own "Sell With Ronak Estate" section heading —
+           repeating it here would read as a duplicate. *@
+        <p class="lede">A few details is all we need — our team will reach out to arrange a valuation and next steps.</p>
 
-    <div class="container" style="max-width:700px;">
-        <form id="saleForm" class="card p-4 shadow-sm" autocomplete="off">
+        <form asp-action="Sale" asp-controller="Property" method="post" class="form-card" autocomplete="off">
 
-            <div class="mb-3">
-                <label class="form-label">Address of the property</label>
-                <input type="text" class="form-control" name="Title" required />
+            @Html.AntiForgeryToken()
+
+            <div class="field">
+                <label>Address of the property</label>
+                <input type="text" name="Title" required />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">BHK</label>
-                <select class="form-select" name="BHK" required>
-                    <option value="">-- Select BHK --</option>
-                    <option value="1">1 BHK</option>
-                    <option value="2">2 BHK</option>
-                    <option value="3">3 BHK</option>
-                    <option value="4">4 BHK</option>
-                </select>
+            <div class="field-row">
+                <div class="field">
+                    <label>BHK</label>
+                    <select name="BHK" required>
+                        <option value="">-- Select BHK --</option>
+                        <option value="1">1 BHK</option>
+                        <option value="2">2 BHK</option>
+                        <option value="3">3 BHK</option>
+                        <option value="4">4 BHK</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Expected Price</label>
+                    <input type="number" name="Price" required />
+                </div>
             </div>
 
-            @* <div class="mb-3">
-                <label class="form-label">Location</label>
-                <select class="form-select" name="Location" required>
+            @* <div class="field">
+                <label>Location</label>
+                <select name="Location" required>
                     <option value="">-- Select Location --</option>
                     @foreach (var loc in ViewBag.Locations)
                     {
@@ -37,56 +51,15 @@
                 </select>
             </div> *@
 
-            <div class="mb-3">
-                <label class="form-label">Expected Price</label>
-                <input type="number" class="form-control" name="Price" required />
+            <div class="field">
+                <label>Description</label>
+                <textarea name="Description" rows="4" required></textarea>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" name="Description" rows="4" required></textarea>
-            </div>
-
-            <button type="button"
-                    class="btn-primary w-100"
-                    onclick="submitSaleForm()">
+            <button type="submit" class="btn-brass-block">
                 Submit Property
             </button>
 
         </form>
     </div>
 </section>
-
-<script>
-function submitSaleForm() {
-
-    const form = document.getElementById("saleForm");
-    const data = new FormData(form);
-
-    const title = data.get("Title");
-    //const location = data.get("Location");
-    const bhk = data.get("BHK");
-    const price = data.get("Price");
-
-    if (!title || !bhk || !price) {
-        alert("Please fill all required fields.");
-        return;
-    }
-
-    const message = `Hello Ronak Estate 👋
-I would like to sell my property 🏠
-
-Property Details
-Property Address: ${title}
-BHK: ${bhk}
-Expected Price: ₹${parseInt(price).toLocaleString('en-IN')}
-
-Please contact me for further discussion.
-Thank you 🙂`;
-
-    const url = "https://wa.me/918898456334?text=" + encodeURIComponent(message);
-
-    window.open(url, "_blank");
-    form.reset();
-}
-</script>

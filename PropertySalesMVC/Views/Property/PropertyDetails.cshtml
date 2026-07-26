@@ -7,13 +7,15 @@
     var message =
         $"Hi, I am interested in this property.\n\n{currentUrl}";
 
+    string whatsAppNumber = ViewBag.WhatsAppNumber ?? "";
+
     var whatsappUrl =
-        "https://wa.me/918898456334?text=" +
+        $"https://wa.me/{whatsAppNumber}?text=" +
         Uri.EscapeDataString(message);
 }
 
-<link rel="stylesheet" href="~/css/property-details.css" />
-<section class="property-page-isolation">
+<link rel="stylesheet" href="~/css/property-details.css" asp-append-version="true" />
+<section class="property-page-isolation details-page">
 
 <section class="property-details-wrapper">
 
@@ -61,8 +63,8 @@
 
     <!-- RIGHT : INFO -->
     <div class="property-info-card">
+        <p class="property-location">@Model.Location</p>
         <h1>@Model.Title</h1>
-        <p>📍 @Model.Location</p>
 
         <div class="price">
             ₹ @Model.Price.ToString("N0", new System.Globalization.CultureInfo("en-IN"))
@@ -71,8 +73,8 @@
         <p>@Model.Description</p>
 
         <div class="property-actions">
-            <a href="tel:918898456334" class="btn-call">Call Now</a>
-            <a href="@whatsappUrl" target="_blank" class="btn-whatsapp">WhatsApp</a>
+            <a href="tel:@whatsAppNumber" class="btn-call" onclick="logEnquiry()">Call Now</a>
+            <a href="@whatsappUrl" target="_blank" class="btn-whatsapp" onclick="logEnquiry()">WhatsApp</a>
         </div>
     </div>
 
@@ -88,5 +90,12 @@
     function showVideo(src) {
         document.getElementById("mainMedia").innerHTML =
             `<video src="${src}" controls autoplay class="media-fit"></video>`;
+    }
+
+    function logEnquiry() {
+        fetch('/Property/LogEnquiry?propertyId=@Model.PropertyId', {
+            method: 'POST',
+            keepalive: true
+        }).catch(function () { /* best-effort logging, never block navigation */ });
     }
 </script>

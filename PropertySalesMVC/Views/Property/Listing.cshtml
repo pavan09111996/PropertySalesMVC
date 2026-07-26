@@ -9,48 +9,24 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/landing.css" />
+    <link rel="stylesheet" href="~/css/listing-shared.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/listing-pages.css" asp-append-version="true" />
 }
 
-<!-- ================= HERO ================= -->
-<section class="hero hero-video">
-
-    <video class="hero-bg-video"
-           autoplay
-           muted
-           loop
-           playsinline
-           preload="metadata"
-           poster="/images/hero-fallback.jpg">
-        <source src="/videos/realestate-timelapse.mp4" type="video/mp4" />
-    </video>
-
-    <div class="hero-overlay"></div>
-
-    <div class="hero-content">
-
-        <h1>
-            Explore Properties for <span class="gold-accent">@mode</span>
-        </h1>
-
-        <div class="hero-actions">
-            <a href="/Property/Buy"  class="@(mode == "Buy" ? "active" : "")">Buy</a>
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="mode-switch">
+            <a href="/Property/Buy" class="@(mode == "Buy" ? "active" : "")">Buy</a>
             <a href="/Property/Rent" class="@(mode == "Rent" ? "active" : "")">Rent</a>
             <a href="/Property/Sell" class="@(mode == "Sell" ? "active" : "")">Sell</a>
         </div>
-
-        <p>
-            Handpicked premium properties available for @mode.ToLower()
-        </p>
-
+        <h1>Explore Properties for <span class="gold-accent">@mode</span></h1>
+        <p>Handpicked homes across Borivali &amp; Kandivali, available for @mode.ToLower().</p>
     </div>
-</section>
+</div>
 
-<!-- ================= FILTER ================= -->
-<div class="listing-filter rf-filter">
+<div class="listing-filter">
     <form method="get" class="rf-form">
-
-        <!-- LOCATION -->
         <div class="rf-group">
             <label class="rf-label">Location</label>
             <select name="locationId" class="rf-select">
@@ -67,7 +43,6 @@
             </select>
         </div>
 
-        <!-- BHK -->
         <div class="rf-group">
             <label class="rf-label">BHK</label>
             <select name="bhk" class="rf-select">
@@ -87,17 +62,9 @@
         <button type="submit" class="rf-btn">
             Apply Filters
         </button>
-
     </form>
 </div>
 
-<!-- ================= LISTING ================= -->
 <section class="properties-section">
-
-    <h2 class="section-title">
-        Featured @mode Properties
-    </h2>
-
     @await Html.PartialAsync("_PropertyGrid", Model)
-
 </section>
