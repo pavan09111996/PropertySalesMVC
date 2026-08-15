@@ -42,9 +42,9 @@
                 else
                 {
                     <li><a class="nav-link @(IsActive("Admin", "Dashboard") ? "active" : "")" href="/Admin/Dashboard"><span class="dot"></span>Dashboard</a></li>
+                    <li><a class="nav-link @(IsActive("Admin", "Analytics") ? "active" : "")" href="/Admin/Analytics"><span class="dot"></span>Analytics</a></li>
                     <li><a class="nav-link @(IsActive("Admin", "AddProperty") ? "active" : "")" href="/Admin/AddProperty"><span class="dot"></span>Add Property</a></li>
                     <li><a class="nav-link @(IsActive("Admin", "Locations") ? "active" : "")" href="/Admin/Locations"><span class="dot"></span>Locations</a></li>
-                    <li><a class="nav-link @(IsActive("Admin", "Enquiries") ? "active" : "")" href="/Admin/Enquiries"><span class="dot"></span>Enquiries</a></li>
                     <li><a class="nav-link @(IsActive("Admin", "Profile") ? "active" : "")" href="/Admin/Profile"><span class="dot"></span>Profile</a></li>
                 }
             </ul>

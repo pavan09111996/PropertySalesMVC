@@ -175,29 +175,6 @@ namespace PropertySalesMVC.Repositories
 
             try
             {
-                // PropertyEnquiries.PropertyId is a nullable FK with no ON DELETE
-                // action, so a hard delete below would be blocked by any lead
-                // that references this property. Detach instead of deleting the
-                // lead record — but snapshot the title first, since PropertyInquiry
-                // rows have no Title of their own and rely entirely on this join
-                // to show what was inquired about.
-                await using (var detachEnquiriesCmd = new SqlCommand(@"
-                    UPDATE PropertyEnquiries
-                    SET Title = (SELECT Title FROM Properties WHERE Id = @Id),
-                        PropertyId = NULL
-                    WHERE PropertyId = @Id AND Title IS NULL", con, tran))
-                {
-                    detachEnquiriesCmd.Parameters.AddWithValue("@Id", propertyId);
-                    await detachEnquiriesCmd.ExecuteNonQueryAsync();
-                }
-
-                await using (var clearRemainingRefsCmd = new SqlCommand(
-                    "UPDATE PropertyEnquiries SET PropertyId = NULL WHERE PropertyId = @Id", con, tran))
-                {
-                    clearRemainingRefsCmd.Parameters.AddWithValue("@Id", propertyId);
-                    await clearRemainingRefsCmd.ExecuteNonQueryAsync();
-                }
-
                 await using (var delImagesCmd = new SqlCommand(
                     "DELETE FROM PropertyImages WHERE PropertyId = @Id", con, tran))
                 {

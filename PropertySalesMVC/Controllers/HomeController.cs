@@ -9,14 +9,12 @@ namespace PropertySalesMVC.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IAdminService _adminService;
-        private readonly IEnquiryService _enquiryService;
         private readonly IPropertyService _propertyService;
 
-        public HomeController(ILogger<HomeController> logger, IAdminService adminService, IEnquiryService enquiryService, IPropertyService propertyService)
+        public HomeController(ILogger<HomeController> logger, IAdminService adminService, IPropertyService propertyService)
         {
             _logger = logger;
             _adminService = adminService;
-            _enquiryService = enquiryService;
             _propertyService = propertyService;
         }
 
@@ -72,8 +70,6 @@ namespace PropertySalesMVC.Controllers
                 ModelState.AddModelError("", "Contact service temporarily unavailable.");
                 return View(model);
             }
-
-            await _enquiryService.LogContactEnquiryAsync(model.Name, model.Phone, model.Message);
 
             string message =
                 "New Property Enquiry\n" +

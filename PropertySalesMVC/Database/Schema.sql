@@ -160,22 +160,41 @@ BEGIN
 END
 GO
 
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'PropertyEnquiries')
+-- Removed 2026-07-28: the business decided WhatsApp itself is sufficient as
+-- the record of customer contact — the admin-side lead inbox this fed
+-- (/Admin/Enquiries) added a duplicate record nobody was using. Dropped
+-- outright (not just stopped writing to) at the user's explicit choice,
+-- since the historical lead data was never going to be looked at again.
+IF EXISTS (SELECT 1 FROM sys.tables WHERE name = 'PropertyEnquiries')
 BEGIN
-    CREATE TABLE PropertyEnquiries
+    DROP TABLE PropertyEnquiries;
+END
+GO
+
+-- Anonymous listing-view analytics — aggregated counters, not per-visit event
+-- rows, to stay tiny against the 1000MB DB budget (one row per
+-- date+mode+location+BHK combo that ever occurred, not one row per view —
+-- growth is capped by combination count, not traffic, so even years of data
+-- stay negligible; see ListingViewStatsRepository.RecordViewAsync).
+-- No IP/session/identity is ever recorded — this is deliberately
+-- non-identifying, since the site never requires a customer to log in.
+-- Written from PropertyController.ListingPartial (first page of a
+-- search/filter only, not every pagination click) via IListingViewStatsRepository,
+-- which also self-purges rows older than 730 days (2 years) on every write —
+-- a generous safety net, not a real storage-pressure fix given the math above.
+IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'ListingViewStats')
+BEGIN
+    CREATE TABLE ListingViewStats
     (
-        Id              INT IDENTITY(1,1) PRIMARY KEY,
-        EnquiryType     NVARCHAR(30)    NOT NULL,   -- 'Contact' | 'PropertyInquiry' | 'SellSubmission'
-        PropertyId      INT             NULL REFERENCES Properties(Id),
-        Name            NVARCHAR(200)   NULL,
-        Phone           NVARCHAR(30)    NULL,
-        Message         NVARCHAR(MAX)   NULL,
-        Title           NVARCHAR(200)   NULL,
-        BHK             INT             NULL,
-        Price           DECIMAL(18,2)   NULL,
-        Description     NVARCHAR(MAX)   NULL,
-        CreatedOn       DATETIME        NOT NULL DEFAULT GETDATE()
+        Id          INT IDENTITY(1,1) PRIMARY KEY,
+        ViewDate    DATE            NOT NULL,
+        Mode        NVARCHAR(10)    NOT NULL,   -- 'Buy' | 'Rent'
+        LocationId  INT             NULL REFERENCES LocationMaster(Id),  -- NULL = "All Locations" was selected
+        BHK         INT             NULL,                                -- NULL = "Any BHK" was selected
+        ViewCount   INT             NOT NULL DEFAULT 0
     );
+
+    CREATE INDEX IX_ListingViewStats_ViewDate ON ListingViewStats (ViewDate);
 END
 GO
 

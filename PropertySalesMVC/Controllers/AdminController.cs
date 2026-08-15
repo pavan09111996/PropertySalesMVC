@@ -12,23 +12,35 @@ namespace PropertySalesMVC.Controllers
         private readonly IPropertyService _propertyService;
         private readonly ILocationService _locationService;
         private readonly IAdminService _adminService;
-        private readonly IEnquiryService _enquiryService;
         private readonly IErrorLogService _errorLogService;
+        private readonly IAnalyticsService _analyticsService;
 
         public AdminController(
             IAuthService authService,
             IPropertyService propertyService,
             ILocationService locationService,
             IAdminService adminService,
-            IEnquiryService enquiryService,
-            IErrorLogService errorLogService)
+            IErrorLogService errorLogService,
+            IAnalyticsService analyticsService)
         {
             _authService = authService;
             _propertyService = propertyService;
             _locationService = locationService;
             _adminService = adminService;
-            _enquiryService = enquiryService;
             _errorLogService = errorLogService;
+            _analyticsService = analyticsService;
+        }
+
+        [AdminAuthorize]
+        public async Task<IActionResult> Analytics(int days = 30)
+        {
+            // Pin to the handful of ranges the view's tabs offer — an
+            // arbitrary ?days= shouldn't run an unbounded query.
+            if (days != 7 && days != 30 && days != 90)
+                days = 30;
+
+            var model = await _analyticsService.GetAnalyticsAsync(days);
+            return View(model);
         }
 
         [HttpPost]
@@ -205,17 +217,6 @@ namespace PropertySalesMVC.Controllers
 
             TempData["ProfileMessage"] = "Profile updated successfully.";
             return RedirectToAction("Profile");
-        }
-
-        [AdminAuthorize]
-        public async Task<IActionResult> Enquiries(int page = 1)
-        {
-            var (enquiries, totalCount) = await _enquiryService.GetEnquiriesAsync(page <= 0 ? 1 : page, 20);
-
-            ViewBag.CurrentPage = page <= 0 ? 1 : page;
-            ViewBag.TotalPages = (int)Math.Ceiling(totalCount / 20.0);
-
-            return View(enquiries);
         }
 
         [DeveloperAuthorize]

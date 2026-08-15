@@ -10,13 +10,19 @@ namespace PropertySalesMVC.Controllers
     {
         private readonly IPropertyService _propertyService;
         private readonly IAdminService _adminService;
-        private readonly IEnquiryService _enquiryService;
+        private readonly IAnalyticsService _analyticsService;
+        private readonly ILogger<PropertyController> _logger;
 
-        public PropertyController(IPropertyService propertyService, IAdminService adminService, IEnquiryService enquiryService)
+        public PropertyController(
+            IPropertyService propertyService,
+            IAdminService adminService,
+            IAnalyticsService analyticsService,
+            ILogger<PropertyController> logger)
         {
             _propertyService = propertyService;
             _adminService = adminService;
-            _enquiryService = enquiryService;
+            _analyticsService = analyticsService;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -42,13 +48,6 @@ namespace PropertySalesMVC.Controllers
             PopulateAdminViewBag(adminDetails);
 
             return View(model);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> LogEnquiry(int propertyId)
-        {
-            await _enquiryService.LogPropertyInquiryAsync(propertyId);
-            return Ok();
         }
 
         [HttpGet]
@@ -139,7 +138,36 @@ namespace PropertySalesMVC.Controllers
             ViewBag.CurrentPage = filter.Page;
             ViewBag.TotalPages = (int)Math.Ceiling(totalCount / (double)filter.PageSize);
 
+            // Only count the first page of a search/filter as a "view" — paging
+            // through results already found isn't a new expression of intent.
+            // Session-deduped: the same visitor re-hitting the same combo (repeat
+            // clicks, refreshes, tab-switching) only counts once per day, so the
+            // numbers reflect distinct interest rather than click noise. No identity
+            // is stored anywhere — this only touches the session's own in-memory state.
+            // Best-effort: a failure here must never break the listing display.
+            if (filter.Page <= 1)
+            {
+                string viewedKey = BuildViewedSessionKey(filter.Mode, filter.LocationId, filter.BHK);
+                if (HttpContext.Session.GetString(viewedKey) == null)
+                {
+                    try
+                    {
+                        await _analyticsService.RecordListingViewAsync(filter.Mode, filter.LocationId, filter.BHK);
+                        HttpContext.Session.SetString(viewedKey, "1");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Failed to record listing view analytics.");
+                    }
+                }
+            }
+
             return PartialView("_PropertyGridWithPagination", properties);
+        }
+
+        private static string BuildViewedSessionKey(string mode, int? locationId, int? bhk)
+        {
+            return $"lv_{DateTime.Today:yyyyMMdd}_{mode}_{locationId?.ToString() ?? "any"}_{bhk?.ToString() ?? "any"}";
         }
 
         public async Task<IActionResult> FilterPartial(string mode)
@@ -170,9 +198,6 @@ namespace PropertySalesMVC.Controllers
                 TempData["ErrorMessage"] = "Please fill all required fields correctly.";
                 return RedirectToAction("Sale");
             }
-
-            // Persist the lead so admin has a record of it beyond the WhatsApp thread
-            await _enquiryService.LogSellSubmissionAsync(model.Title, model.BHK, model.Price, model.Description);
 
             // Prepare WhatsApp message — number comes from the active AdminMaster record
             var admin = await _adminService.GetActiveAdminContactAsync();

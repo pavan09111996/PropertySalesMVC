@@ -1,0 +1,181 @@
+/* ===============================================
+   ADMIN ANALYTICS — scoped to Views/Admin/Analytics.cshtml only.
+   Tokens (--stone, --ink, --brass, etc.) come from site.css:root.
+
+   --buy/--rent are a validated categorical pair for chart identity
+   (node validate_palette.js "#B8862E,#00795F" --mode light --surface
+   "#FBF9F4" -> all 6 checks pass, CVD ΔE 12.0 protan, normal-vision floor
+   21.3). The site's own --brass/--verdigris read as gray at chart-mark
+   chroma, so these are deliberately richer versions in the same hue families.
+=================================================== */
+
+.analytics-range {
+    display: inline-flex;
+    border: 1px solid var(--line);
+    margin: 4px 0 24px;
+}
+
+.range-btn {
+    padding: 8px 18px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    text-decoration: none;
+    border-right: 1px solid var(--line);
+}
+
+.range-btn:last-child { border-right: none; }
+.range-btn:hover { color: var(--ink); }
+.range-btn.active { background: var(--ink); color: var(--paper); }
+
+.stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    margin-bottom: 32px;
+}
+
+.stat-tile {
+    background: var(--paper);
+    padding: 20px 22px;
+}
+
+.stat-tile .eyebrow { margin-bottom: 8px; }
+
+.stat-tile strong {
+    display: block;
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 600;
+    font-size: 28px;
+    color: var(--ink);
+}
+
+.section { margin-bottom: 44px; }
+
+.section-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.section-head h2 {
+    font-family: var(--display);
+    font-weight: 500;
+    font-size: 17px;
+    color: var(--ink);
+    margin: 0;
+}
+
+.section-tools { display: flex; align-items: center; gap: 18px; }
+
+.legend { display: flex; gap: 16px; align-items: center; }
+.legend .key {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12px; color: var(--ink-soft);
+}
+.legend .swatch { width: 11px; height: 11px; border-radius: 2px; }
+.swatch.buy { background: #B8862E; }
+.swatch.rent { background: #00795F; }
+
+.table-toggle {
+    background: none; border: none; font-size: 12px; color: var(--ink-soft);
+    text-decoration: underline; cursor: pointer; font-family: inherit; padding: 0;
+}
+.table-toggle:hover { color: var(--ink); }
+
+/* ===== STACKED BAR ROWS (Top Locations / Top BHK) ===== */
+.bar-chart { display: flex; flex-direction: column; gap: 14px; }
+.bar-chart.hidden { display: none; }
+
+.bar-row {
+    display: grid;
+    grid-template-columns: 140px 1fr 48px;
+    align-items: center;
+    gap: 14px;
+}
+
+.bar-row .row-label { font-size: 13px; font-weight: 600; color: var(--ink); }
+
+.bar-track { position: relative; height: 24px; width: 100%; }
+
+.bar-fill-group { display: flex; gap: 2px; height: 100%; }
+
+.seg {
+    height: 100%;
+    transition: filter 0.15s ease;
+    cursor: pointer;
+}
+.seg.buy { background: #B8862E; }
+.seg.rent { background: #00795F; border-radius: 0 4px 4px 0; }
+.seg:hover { filter: brightness(1.08); }
+
+.bar-row .row-total {
+    font-size: 13px; font-weight: 600; color: var(--ink);
+    text-align: right; font-variant-numeric: tabular-nums;
+}
+
+/* ===== TABLE VIEW (accessibility fallback for the bar charts) ===== */
+.data-table { display: none; width: 100%; border-collapse: collapse; font-size: 13px; margin-top: 8px; }
+.data-table.show { display: table; }
+.data-table th {
+    text-align: left; font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); border-bottom: 1px solid var(--line); padding: 8px 10px;
+}
+.data-table td { padding: 9px 10px; border-bottom: 1px solid var(--line); font-variant-numeric: tabular-nums; }
+.data-table td:first-child { font-variant-numeric: normal; font-weight: 600; }
+
+/* ===== HEATMAP GRID (Location x BHK intersection) ===== */
+.heatmap-pair { display: flex; gap: 32px; flex-wrap: wrap; }
+.heatmap-block { flex: 1 1 320px; }
+.heatmap-block .hm-title {
+    display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700;
+    letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px;
+}
+table.heatmap { border-collapse: separate; border-spacing: 3px; width: 100%; }
+table.heatmap th {
+    font-size: 11px; font-weight: 600; color: var(--ink-soft); text-align: center; padding: 4px 2px;
+}
+table.heatmap th.row-head { text-align: left; font-weight: 600; color: var(--ink); padding-right: 8px; }
+table.heatmap td {
+    text-align: center; font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums;
+    border-radius: 3px; padding: 9px 4px; cursor: pointer;
+}
+table.heatmap td.zero { font-weight: 400; }
+
+/* ===== TREND CHART (SVG line + area, single series) ===== */
+.trend-card {
+    border: 1px solid var(--line);
+    background: var(--paper);
+    padding: 20px 20px 12px;
+}
+.trend-svg { width: 100%; height: 180px; display: block; overflow: visible; }
+.trend-crosshair { stroke: var(--line); stroke-width: 1; }
+.trend-dot { fill: #00795F; stroke: var(--paper); stroke-width: 2; }
+.trend-endlabel { font-size: 11px; font-weight: 700; fill: var(--ink); }
+.axis-tick { font-size: 10px; fill: var(--ink-soft); }
+.grid-line { stroke: var(--line); stroke-width: 1; }
+
+/* ===== TOOLTIP (shared by bars, heatmap cells, trend points) ===== */
+.tooltip {
+    position: fixed; pointer-events: none; z-index: 50;
+    background: var(--ink); color: var(--paper); padding: 8px 12px;
+    font-size: 12px; border-radius: 2px; box-shadow: 0 6px 20px rgba(0,0,0,0.18);
+    opacity: 0; transition: opacity 0.1s ease; white-space: nowrap;
+}
+.tooltip.show { opacity: 1; }
+.tooltip .t-value { font-weight: 700; }
+.tooltip .t-series { color: rgba(251,249,244,0.65); margin-left: 5px; }
+
+@media (max-width: 768px) {
+    .stat-row { grid-template-columns: 1fr; }
+    .bar-row { grid-template-columns: 1fr; row-gap: 6px; }
+    .bar-row .row-total { text-align: left; }
+    .section-head { flex-direction: column; align-items: flex-start; }
+}

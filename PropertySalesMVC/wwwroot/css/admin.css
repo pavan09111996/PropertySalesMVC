@@ -625,6 +625,13 @@ input[type="file"].form-control {
     .admin-nav { flex-direction: row; padding: 0; }
     .admin-nav .nav-link { border-left: none; border-bottom: 2px solid transparent; white-space: nowrap; }
     .admin-nav .nav-link.active { border-left-color: transparent; border-bottom-color: var(--brass); }
-    .admin-logout { display: none; }
+    .admin-logout {
+        margin: 0 0 0 auto;
+        padding-top: 0;
+        border-top: none;
+        border-left: 1px solid var(--line-on-ink);
+        flex-shrink: 0;
+    }
+    .admin-logout a { padding: 11px 16px; white-space: nowrap; }
     .admin-content { padding: 20px; }
 }
